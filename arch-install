@@ -1,0 +1,10 @@
+#!/bin/bash
+efivarscheck=$(ls /sys/firmware/efi/efivars)
+if [ $efivarscheck -eq 2 ] 
+then
+	echo "The system uses BIOS boot!"
+elif [ $efivarscheck -eq 0 ]
+then
+	echo "The system uses UEFI boot!"
+fi
+

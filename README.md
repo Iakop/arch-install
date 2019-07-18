@@ -5,6 +5,13 @@ All of the scripts have been tested on a virtual machine, but should be able to 
 That being said, this is all a work in progress, and as such is not fully usable yet, without any human intervention.
 
 List of todos:
+
+______You are here:______
+
+- Set up an ftp server on local machine.
+	- vsftp has been tried, no success so far. The battle rages on.
+_________________________
+
 - Connect to internet. Set clock.
 - Detect whether UEFI or legacy BIOS boot is to be installed. 
 - Detect hardware: RAM, disks, graphics
