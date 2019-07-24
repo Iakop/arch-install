@@ -1,5 +1,29 @@
 #!/bin/bash
 
+###########################################################################
+# Connect to the internet, and set the system clock
+###########################################################################
+
+# Using nc, the connection to the internet is checked
+echo "Checking for internet access..."
+dns=8.8.8.8
+nc -z -w 30 $dns 53 >/dev/null 2>&1
+connectioncheck=$?
+
+if [ $connectioncheck -eq 0 ] 
+then
+	echo "Connected to the internet!"
+else
+	echo "There is no connection, please remedy and run script again."
+	exit 1
+fi
+
+
+###########################################################################
+# Check the boot type:
+###########################################################################
+echo "Checking boot type..."
+
 # First list the directory with efivars, and check whether they exist:
 # Redirect stdout and stderr to /dev/null
 ls /sys/firmware/efi/efivars > /dev/null 2>&1
