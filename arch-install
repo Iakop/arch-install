@@ -1,5 +1,10 @@
 #!/bin/bash
-efivarscheck=$(ls /sys/firmware/efi/efivars)
+
+# First list the directory with efivars, and check whether they exist:
+# Redirect stdout and stderr to /dev/null
+ls /sys/firmware/efi/efivars > /dev/null 2>&1
+efivarscheck=$?
+
 if [ $efivarscheck -eq 2 ] 
 then
 	echo "The system uses BIOS boot!"
