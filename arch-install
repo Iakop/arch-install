@@ -7,7 +7,7 @@
 # Using nc, the connection to the internet is checked
 echo "Checking for internet access..."
 dns=8.8.8.8
-nc -z -w 30 $dns 53 >/dev/null 2>&1
+nc -z -w 30 $dns 53 > /dev/null 2>&1
 connectioncheck=$?
 
 if [ $connectioncheck -eq 0 ] 
@@ -18,14 +18,20 @@ else
 	exit 1
 fi
 
+# Set the system clock
+echo "Synchronizing the system clock..."
+timedatectl set-ntp true
+# Sleep 2 seconds to allow ntp service to start
+sleep 2
+timedatectl status
 
 ###########################################################################
 # Check the boot type:
 ###########################################################################
-echo "Checking boot type..."
 
 # First list the directory with efivars, and check whether they exist:
 # Redirect stdout and stderr to /dev/null
+echo "Checking boot type..."
 ls /sys/firmware/efi/efivars > /dev/null 2>&1
 efivarscheck=$?
 
