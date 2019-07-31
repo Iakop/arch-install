@@ -6,15 +6,16 @@ That being said, this is all a work in progress, and as such is not fully usable
 
 List of todos:
 
+- Set up an ftp server on local machine, .
+- Connect to internet.
+- Detect whether UEFI or legacy BIOS boot is to be installed. 
+
 ______You are here:______
 
-- Set up an ftp server on local machine.
-	- vsftp has been tried, no success so far. The battle rages on.
+- Set clock.
+- Detect hardware: RAM, disks, graphics.
 _________________________
 
-- Connect to internet. Set clock.
-- Detect whether UEFI or legacy BIOS boot is to be installed. 
-- Detect hardware: RAM, disks, graphics
 - From this info, perform the correct drive formatting in script.
 	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM)
 	- Generate the partition from size and boot requirements
