@@ -9,12 +9,12 @@ List of todos:
 - Set up an ftp server on local machine, .
 - Connect to internet.
 - Detect whether UEFI or legacy BIOS boot is to be installed. 
-
-______You are here:______
+___
+**You are here:**
 
 - Set clock.
 - Detect hardware: RAM, disks, graphics.
-_________________________
+___
 
 - From this info, perform the correct drive formatting in script.
 	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM)
