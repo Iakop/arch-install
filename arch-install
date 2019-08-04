@@ -18,12 +18,71 @@ else
 	exit 1
 fi
 
+# Prompt, if user wants to set a timezone:
+echo "Would you like to set the clock to a custom timezone? [Y/n]: "
+# Check for input:
+read response
+if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+	timezoneselect="custom"
+
+elif [ "${response,,}" == "n" ]; then
+	timezoneselect="default"
+else
+	echo "I did not understand that, please try again!"
+fi
+
+tzexit=1
+while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
+	# Prompt for user specified timezone info:
+	echo "Please input the timezone (format: Region/City): "
+	read tzresponse
+	echo "Checking for timezone info..."
+	ls /usr/share/zoneinfo/$tzresponse >/dev/null 2>&1
+	timezonecheck=$?
+	# If the timezone exists, then link it:
+	if [ $timezonecheck -eq 0 ] && [ "$tzresponse" != "" ]; then
+		echo "Timezone found!"
+		tzexit=0
+	# Else ask if the user wants to try again:
+	else
+		echo "Timezone info not found, would you like to try again? [Y/n]: "
+		# Check for input:
+		validresponse=1
+		while [ $validresponse -eq 1 ]; do
+			read response
+			if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+				validresponse=0
+				timezoneselect="custom"
+				
+			elif [ "${response,,}" == "n" ]; then
+				validresponse=0
+				timezoneselect="default"
+				tzexit=0
+			else
+				echo "I did not understand that, please try again!"
+			fi
+		done
+	fi
+done
+
+# Apply changes to timezone as requested:
+if [ $timezoneselect == "custom" ]; then
+	echo "Linking to system timezone..."
+	ln -sf /usr/share/zoneinfo/$tzresponse /etc/localtime
+	echo "Done!"
+elif [ $timezoneselect == "default" ]; then
+	echo "Timezone will be set to default!"
+	tzresponse="UTC"
+fi
+
 # Set the system clock
 echo "Synchronizing the system clock..."
 timedatectl set-ntp true
+timedatectl set-timezone $tzresponse
 # Sleep 2 seconds to allow ntp service to start
 sleep 2
 timedatectl status
+echo "Done setting time!"
 
 ###########################################################################
 # Check the boot type:

@@ -6,13 +6,13 @@ That being said, this is all a work in progress, and as such is not fully usable
 
 List of todos:
 
-- Set up an ftp server on local machine, .
-- Connect to internet.
-- Detect whether UEFI or legacy BIOS boot is to be installed. 
+- Set up an ftp server on local machine. &#x2713;
+- Connect to internet. &#x2713;
+- Detect whether UEFI or legacy BIOS boot is to be installed. &#x2713;
+- Set clock. &#x2713;
 ___
 **You are here:**
 
-- Set clock.
 - Detect hardware: RAM, disks, graphics.
 ___
 
