@@ -35,7 +35,7 @@ ___
 That covers the basic setup, and from then on, I will script all my ricing as well.
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 
-An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script:
+An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script (the name `ftphack` is already added in `.gitignore`, but **please** remember not to push your password and username!)
 
 ``
 #!/bin/bash
