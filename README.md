@@ -1,4 +1,4 @@
-#Arch Install Scripts
+# Arch Install Scripts
 
 This is a collection of scripts that I will be using to install Arch Linux on my personal computer.
 All of the scripts have been tested on a virtual machine, but should be able to run just as well on bare metal.
@@ -34,3 +34,18 @@ ___
 
 That covers the basic setup, and from then on, I will script all my ricing as well.
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
+
+An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script:
+
+``
+#!/bin/bash
+
+# Remove any old versions:
+rm arch-install
+# wget the new version over ftp:
+wget ftp://username:password@hostaddress/location/of/arch-install
+# Ensure the new version is executable:
+chmod 755 arch-install
+``
+
+That should speed up development somewhat. Of course the script needs to be gotten on the VM first, but that should be simple through `wget` as well!
