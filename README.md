@@ -37,7 +37,7 @@ This is intended to install everything from scratch, but perhaps the ricing scri
 
 An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script (the name `ftphack` is already added in `.gitignore`, but **please** remember not to push your password and username!)
 
-``
+```bash
 #!/bin/bash
 
 # Remove any old versions:
@@ -46,6 +46,6 @@ rm arch-install
 wget ftp://username:password@hostaddress/location/of/arch-install
 # Ensure the new version is executable:
 chmod 755 arch-install
-``
+```
 
 That should speed up development somewhat. Of course the script needs to be gotten on the VM first, but that should be simple through `wget` as well!
