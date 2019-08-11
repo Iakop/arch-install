@@ -80,7 +80,7 @@ echo "Synchronizing the system clock..."
 timedatectl set-ntp true
 timedatectl set-timezone $tzresponse
 # Sleep 2 seconds to allow ntp service to start
-sleep 2
+#sleep 2
 timedatectl status
 echo "Done setting time!"
 
@@ -102,3 +102,31 @@ then
 	echo "The system uses UEFI boot!"
 fi
 
+###########################################################################
+# Detect hardware: RAM
+###########################################################################
+
+echo "Detecting RAM available: "
+free -h --giga
+ramavail=$(free -h --giga | grep Mem | awk '{gsub("G","")} {printf "%.1f", $2}')
+ramavailint=$(echo "$ramavail" | awk '{printf "%d", $1}') 
+if [ $ramavailint -ne 0 ]; then
+	echo "$ramavail Gigabyte RAM available!"
+else
+	ramavail=$(free --mega | grep Mem | awk '{printf "%.1f", $2}')
+	echo "$ramavail Megabyte RAM available!"
+fi
+
+###########################################################################
+# Detect hardware: Storage
+###########################################################################
+
+echo "Available disks:"
+disksavail=($(lsblk | grep disk | awk '{print $1}'))
+sizesavail=($(lsblk | grep disk | awk '{print $4}'))
+
+for i in "${disksavail[@]}"
+do
+	:
+	echo -e "Disk: $disksavail\tSize: $sizesavail"
+done

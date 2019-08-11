@@ -10,10 +10,11 @@ List of todos:
 - Connect to internet. &#x2713;
 - Detect whether UEFI or legacy BIOS boot is to be installed. &#x2713;
 - Set clock. &#x2713;
+- Detect hardware: RAM, disks.
 ___
 **You are here:**
 
-- Detect hardware: RAM, disks, graphics.
+- Detect hardware: Graphics.
 ___
 
 - From this info, perform the correct drive formatting in script.
