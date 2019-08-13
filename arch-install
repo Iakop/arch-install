@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###########################################################################
-# Connect to the internet, and set the system clock
+# Connect to the internet
 ###########################################################################
 
 # Using nc, the connection to the internet is checked
@@ -17,6 +17,11 @@ else
 	echo "There is no connection, please remedy and run script again."
 	exit 1
 fi
+echo
+
+###########################################################################
+# Set the system clock
+###########################################################################
 
 # Prompt, if user wants to set a timezone:
 echo "Would you like to set the clock to a custom timezone? [Y/n]: "
@@ -83,6 +88,7 @@ timedatectl set-timezone $tzresponse
 #sleep 2
 timedatectl status
 echo "Done setting time!"
+echo
 
 ###########################################################################
 # Check the boot type:
@@ -101,6 +107,7 @@ elif [ $efivarscheck -eq 0 ]
 then
 	echo "The system uses UEFI boot!"
 fi
+echo
 
 ###########################################################################
 # Detect hardware: RAM
@@ -116,17 +123,39 @@ else
 	ramavail=$(free --mega | grep Mem | awk '{printf "%.1f", $2}')
 	echo "$ramavail Megabyte RAM available!"
 fi
+echo
 
 ###########################################################################
 # Detect hardware: Storage
 ###########################################################################
 
-echo "Available disks:"
+echo "List of block devices:"
 disksavail=($(lsblk | grep disk | awk '{print $1}'))
 sizesavail=($(lsblk | grep disk | awk '{print $4}'))
 
-for i in "${disksavail[@]}"
+lsblk; echo
+
+echo "Please pick a disk to install on:"
+for i in "${!disksavail[@]}"
 do
-	:
-	echo -e "Disk: $disksavail\tSize: $sizesavail"
+	echo -e "\t$i) /dev/${disksavail[$i]} ${sizesavail[$i]}"
 done
+echo -e "\tq) Abort install"
+
+# Check for input:
+validresponse=1
+while [ $validresponse -eq 1 ]; do
+	read response
+	# Check if response is a number, and the number index exists within the options:
+	if [ $response -eq $response ] 2> /dev/null && [ "${disksavail[${response}]+y}" == "y" ]; then
+		validresponse=0
+		choicenumber=$response
+		
+	elif [ "${response,,}" == "q" ]; then
+		echo "Aborting install!"
+		exit 1
+	else
+		echo "I did not understand that, please try again!"
+	fi
+done
+echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"

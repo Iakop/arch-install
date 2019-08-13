@@ -10,19 +10,19 @@ List of todos:
 - Connect to internet. &#x2713;
 - Detect whether UEFI or legacy BIOS boot is to be installed. &#x2713;
 - Set clock. &#x2713;
-- Detect hardware: RAM, disks.
+- Detect hardware: RAM, disks. &#x2713;
+	- Pick disk to install on. &#x2713;
 ___
 **You are here:**
-
-- Detect hardware: Graphics.
-___
-
 - From this info, perform the correct drive formatting in script.
 	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM)
 	- Generate the partition from size and boot requirements
 	- Mount
 	- Generate fstab
-- Pacstrap base, base-devel and my custom package list.
+___
+
+- Detect hardware: Graphics.
+- Pacstrap base, base-devel and my custom package list (Including package drivers!).
 - Does arch-chroot work in script?
 - Detect graphics, prompt user for driver installation:
 	- TBD, whether to include bumblebee for NVidia or not.
