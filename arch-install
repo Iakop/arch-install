@@ -159,3 +159,26 @@ while [ $validresponse -eq 1 ]; do
 	fi
 done
 echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"
+
+###########################################################################
+# Detect hardware: Graphics
+###########################################################################
+
+echo
+# To get the graphics, two categories are searched using lspci:
+testingmode="on"
+if [ $testingmode == "on" ]; then 
+	vgacontrollers=$(cat testpci | grep -i "vga" | awk -F '"' '{print "\t" $6 " by " $4}')
+	dddcontrollers=$(cat testpci | grep -i "3d" | awk -F '"' '{print "\t" $6 " by " $4}')
+else
+	# VGA compatible cards, usually the main:
+	vgacontrollers=$(lspci -mm | grep -i "vga" | awk -F '"' '{print "\t" $6 " by " $4}')
+	# 3D controllers, usually secondary in a prime setup.
+	dddcontrollers=$(lspci -mm | grep -i "3d" | awk -F '"' '{print "\t" $6 " by " $4}')
+fi
+
+# Then a check is performed to see if there are occurances in either array:
+echo "Found VGA controllers:"
+echo -e "$vgacontrollers"
+echo "Found 3D controllers:"
+echo -e "$dddcontrollers"

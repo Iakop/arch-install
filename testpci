@@ -1,0 +1,5 @@
+00:02.0 "VGA compatible controller" "Intel Corporation" "Haswell-ULT Integrated Graphics Controller" -r0b "Lenovo" "Haswell-ULT Integrated Graphics Controller"
+00:02.0 "VGA compatible controller" "NVIDIA Corporation" "GM108M [GeForce 840M]" -rff -pff "" ""
+00:02.0 "VGA compatible conroller" "AMD Corporation" "Radeon BlaBla" -rff -pff "" ""
+03:00.0 "3D controller" "NVIDIA Corporation" "GM108M [GeForce 840M]" -rff -pff "" ""
+03:00.0 "3D controller" "AMD Corporation" "Radeon BlaBla" -rff -pff "" ""
