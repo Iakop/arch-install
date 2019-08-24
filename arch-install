@@ -113,7 +113,7 @@ echo
 # Detect hardware: RAM
 ###########################################################################
 
-echo "Detecting RAM available: "
+echo "Detecting RAM available..."
 free -h --giga
 ramavail=$(free -h --giga | grep Mem | awk '{gsub("G","")} {printf "%.1f", $2}')
 ramavailint=$(echo "$ramavail" | awk '{printf "%d", $1}') 
@@ -129,6 +129,7 @@ echo
 # Detect hardware: Storage
 ###########################################################################
 
+echo "Checking disks available..."
 echo "List of block devices:"
 disksavail=($(lsblk | grep disk | awk '{print $1}'))
 sizesavail=($(lsblk | grep disk | awk '{print $4}'))
@@ -159,22 +160,22 @@ while [ $validresponse -eq 1 ]; do
 	fi
 done
 echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"
+echo
 
 ###########################################################################
 # Detect hardware: Graphics
 ###########################################################################
 
-echo
 # To get the graphics, two categories are searched using lspci:
 testingmode="on"
 if [ $testingmode == "on" ]; then 
-	vgacontrollers=$(cat testpci | grep -i "vga" | awk -F '"' '{print "\t" $6 " by " $4}')
-	dddcontrollers=$(cat testpci | grep -i "3d" | awk -F '"' '{print "\t" $6 " by " $4}')
+	vgacontrollers=$(cat testpci | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
+	dddcontrollers=$(cat testpci | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
 else
 	# VGA compatible cards, usually the main:
-	vgacontrollers=$(lspci -mm | grep -i "vga" | awk -F '"' '{print "\t" $6 " by " $4}')
+	vgacontrollers=$(lspci -mm | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
 	# 3D controllers, usually secondary in a prime setup.
-	dddcontrollers=$(lspci -mm | grep -i "3d" | awk -F '"' '{print "\t" $6 " by " $4}')
+	dddcontrollers=$(lspci -mm | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
 fi
 
 # Then a check is performed to see if there are occurances in either array:
@@ -182,3 +183,60 @@ echo "Found VGA controllers:"
 echo -e "$vgacontrollers"
 echo "Found 3D controllers:"
 echo -e "$dddcontrollers"
+
+# Declare an array for vendors of 3d accelerated graphics:
+declare -a graphicsdrivers
+
+# Check for different corporations, to provide the drivers:
+echo -e "$vgacontrollers" | grep -e NVIDIA > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("nvidia" "nvidia-utils" "lib32-nvidia-utils")
+fi
+
+echo -e "$vgacontrollers" | grep -e Intel > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-intel")
+fi
+
+echo -e "$vgacontrollers" | grep -e AMD > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-amdgpu")
+fi
+
+echo -e "$vgacontrollers" | grep -e ATI > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-ati")
+fi
+
+echo -e "$vgacontrollers" | grep -e ATI -e AMD -e Intel > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("mesa" "lib32-mesa")
+fi
+
+# Check for nvidia prime compatible 3d controllers:
+echo -e "$dddcontrollers" | grep -e NVIDIA > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	# If available, ask if bumblebeee support is wanted:
+	echo "Seems like NVidia PRIME might be available. Would you like to install bumblebee support? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		bumblebeesupport="yes"
+		echo "Bumblebee support will be installed!"
+	elif [ "${response,,}" == "n" ]; then
+		bumblebeesupport="no"
+		echo "Bumblebee support will not be installed!"
+	else
+		echo "I did not understand that, please try again!"
+	fi
+	if [ $bumblebeesupport == "yes" ]; then
+		graphicsdrivers+=("bumblebee" "lib32-virtualgl")
+	fi
+fi
+
+# Installing following graphics drivers:
+echo "The following graphics drivers will be installed:"
+for driver in "${!graphicsdrivers[@]}"
+do
+	echo -e "\t${graphicsdrivers[$driver]}"
+done
+
