@@ -240,3 +240,31 @@ do
 	echo -e "\t${graphicsdrivers[$driver]}"
 done
 
+###########################################################################
+# Scale and partition installation drive:
+###########################################################################
+
+# First the disk is added to the sfdisk command:
+instructs="/tmp/instructs.sfdisk"
+# The label is gpt in this installation, as it supports both EFI and legacy BIOS:
+echo "label: gpt" > $instructs
+# The device picked earlier is echoed into the instructions:
+echo "device: /dev/${disksavail[$choicenumber]}" >> $instructs
+# The units are sectors, and the sector size is found:
+echo "unit: sectors" >> $instructs
+# TODO: Unsure whether this needs to be used, but let's keep it for now.
+sectorsize=$(cat /sys/block/${disksavail[$choicenumber]}/queue/hw_sector_size)
+
+# The start of the first partition is for the efivars, or boot sector, so it's dependant on boot type:
+
+cat /tmp/instructs.sfdisk
+
+# Then, the type of boot is used to configure the first part of the sfdisk command:
+if [ $efivarscheck -eq 2 ] 
+then
+	diskpartitions+=
+elif [ $efivarscheck -eq 0 ]
+then
+	echo "The system uses UEFI boot!"
+fi
+
