@@ -1,6 +1,6 @@
 #!/bin/bash
 
-testingmode="on"
+testingmode="off"
 
 ###########################################################################
 # Connect to the internet
@@ -378,13 +378,34 @@ genfstab -U /mnt
 echo
 
 ###########################################################################
-# Pacstrap and install packages from list
+# Pacstrap
 ###########################################################################
 
+echo "Pacstrapping base to / on ${disksavail[$choicenumber]}3 directory..."
+pacstrap /mnt base
+echo
+
+###########################################################################
+# Genfstab
+###########################################################################
+
+genfstab -U /mnt >> /mnt/etc/fstab
+
+###########################################################################
+# Arch-chroot and install packages from list
+###########################################################################
+
+chrootstep="chroot-step"
+cp $chrootstep /mnt/root/$chrootstep
+chmod 755 /mnt/root/$chrootstep
+echo "Arch-chrooting into disk..."
+arch-chroot /mnt /root/$chrootstep
+echo "Done!"
 
 ###########################################################################
 # Clean-up 
 ###########################################################################
+rm -f /mnt/root/$chrootstep
 umount -R /mnt
 swapoff /dev/${disksavail[$choicenumber]}2
 rm -f $instructs
