@@ -239,11 +239,13 @@ for driver in "${!graphicsdrivers[@]}"
 do
 	echo -e "\t${graphicsdrivers[$driver]}"
 done
+echo
 
 ###########################################################################
 # Scale and partition installation drive:
 ###########################################################################
 
+echo "Setting up disk partitioning scheme..."
 # First the disk is added to the sfdisk command:
 instructs="/tmp/instructs.sfdisk"
 # The label is gpt in this installation, as it supports both EFI and legacy BIOS:
@@ -252,19 +254,82 @@ echo "label: gpt" > $instructs
 echo "device: /dev/${disksavail[$choicenumber]}" >> $instructs
 # The units are sectors, and the sector size is found:
 echo "unit: sectors" >> $instructs
-# TODO: Unsure whether this needs to be used, but let's keep it for now.
-sectorsize=$(cat /sys/block/${disksavail[$choicenumber]}/queue/hw_sector_size)
+# Unsure whether this needs to be used:
+#sectorsize=$(cat /sys/block/${disksavail[$choicenumber]}/queue/hw_sector_size)
 
 # The start of the first partition is for the efivars, or boot sector, so it's dependant on boot type:
-
-cat /tmp/instructs.sfdisk
-
 # Then, the type of boot is used to configure the first part of the sfdisk command:
 if [ $efivarscheck -eq 2 ] 
 then
-	diskpartitions+=
+	# Gives the BIOS GUID to the first partition created:
+	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructs
 elif [ $efivarscheck -eq 0 ]
 then
-	echo "The system uses UEFI boot!"
+	# Creates an EFI partition:
+	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructs
+fi
+# Swap is calculated:
+swapsize=$(echo "$ramavail" | awk '{printf "%d", $1 * 2}') 
+echo "/dev/${disksavail[$choicenumber]}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructs
+# Finally, the rest of the disk will be allocated for data:
+echo "/dev/${disksavail[$choicenumber]}3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructs
+
+echo "Disk partitioning scheme will be the following:"
+cat $instructs
+
+echo "Do you want to proceed or abort? [Y/n]:"
+read response
+if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+	proceed="yes"
+elif [ "${response,,}" == "n" ]; then
+	proceed="no"
+else
+	echo "I did not understand that, please try again!"
 fi
 
+# Act upon response:
+if [ $proceed == "yes" ]; then
+	echo "Formatting disk!"
+	sfdisk /dev/${disksavail[$choicenumber]} < $instructs
+	rm -f $instructs
+elif [ $proceed == "no" ]; then
+	echo "Aborting install..."
+	rm -f $instructs
+	exit 1
+else
+	echo "Error! Aborting!"
+	rm -f $instructs
+	exit 1
+fi
+echo
+
+###########################################################################
+# Make filesystems and mount them + fstab preview
+###########################################################################
+
+echo "Now creating the filesystems..."
+if [ $efivarscheck -eq 2 ] 
+then
+	echo "For BIOS boot on GPT, no filesystem is needed on /dev/${disksavail[$choicenumber]}1!"
+elif [ $efivarscheck -eq 0 ]
+then
+	echo "Creating FAT32 fopr EFI  on /dev/${disksavail[$choicenumber]}1..."
+	mkfs.fat -F32 /dev/${disksavail[$choicenumber]}1
+fi
+echo "Creating swap on /dev/${disksavail[$choicenumber]}2..."
+mkswap /dev/${disksavail[$choicenumber]}2
+echo "Creating ext4 filesystem on /dev/${disksavail[$choicenumber]}3..."
+mkfs.ext4 /dev/${disksavail[$choicenumber]}3
+
+echo "Mounting filesystems..."
+mount /dev/${disksavail[$choicenumber]}3 /mnt
+if [ $efivarscheck -eq 0 ]
+then
+	mkdir /mnt/efi
+	mount /dev/${disksavail[$choicenumber]}1 /mnt/efi
+fi
+swapon /dev/${disksavail[$choicenumber]}2
+
+echo "Fstab will be the following:"
+genfstab -U /mnt
+echo

@@ -12,16 +12,16 @@ List of todos:
 - Set clock. &#x2713;
 - Detect hardware: RAM, disks, graphics. &#x2713;
 	- Pick disk to install on. &#x2713;
+- From this info, perform the correct drive formatting in script. &#x2713;
+	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM) &#x2713;
+	- Generate the partition from size and boot requirements &#x2713;
+	- Mount &#x2713;
 ___
 **You are here:**
-- From this info, perform the correct drive formatting in script.
-	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM)
-	- Generate the partition from size and boot requirements
-	- Mount
+- Pacstrap base, base-devel and my custom package list (Including package drivers!).
 	- Generate fstab
 ___
 
-- Pacstrap base, base-devel and my custom package list (Including package drivers!).
 - Does arch-chroot work in script?
 - Detect graphics, prompt user for driver installation:
 	- TBD, whether to include bumblebee for NVidia or not.
