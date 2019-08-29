@@ -12,21 +12,26 @@ List of todos:
 - Set clock. &#x2713;
 - Detect hardware: RAM, disks, graphics. &#x2713;
 	- Pick disk to install on. &#x2713;
+	- Add bumblebee to PRIME setups.&#x2713;
+	- Added drivers to their own install list. &#x2713;
 - From this info, perform the correct drive formatting in script. &#x2713;
 	- Scaling the drive partitions with regards to RAM and swap needs (generally swap = 2xRAM) &#x2713;
 	- Generate the partition from size and boot requirements &#x2713;
 	- Mount &#x2713;
+- Got arch-chroot working with a sub-script to run from the new root.&#x2713;
+- Pacstrap base &#x2713;
+	- Generate fstab &#x2713;
 ___
 **You are here:**
-- Pacstrap base, base-devel and my custom package list (Including package drivers!).
-	- Generate fstab
+- Set the timezone, locale and vconsole keyboard settings.
 ___
 
-- Does arch-chroot work in script?
-- Detect graphics, prompt user for driver installation:
-	- TBD, whether to include bumblebee for NVidia or not.
-	- Install graphics driver.
-- Set the timezone, locale and vconsole keyboard settings.
+- Install the packages specified in packages.list
+	- Build and install pikaur.
+	- Run pikaur to install aur-packages.list.
+- Install the graphics drivers mentioned in their install list.
+	- Configure the drivers if necessary.
+		- Definitely configure bumblebee.
 - Prompt user for hostname, username, password, root password.
 - Generate initramfs
 - Install bootloader (for now, grub)
