@@ -1,0 +1,76 @@
+#!/bin/bash
+
+user="iakop"
+devpc="devpc"
+devpath="MyGitRepos/arch-install"
+
+echo -n "Please enter user password: "
+read -s password
+
+if [ -d "test" ]; then
+	echo "test directory already exists!"
+else
+	echo "Making test directory..."
+	mkdir "test"
+fi
+if [ -d "packages" ]; then
+	echo "packages directory already exists!"
+else
+	echo "Making packages directory..."
+	mkdir "packages"
+fi
+
+# Remove any old versions:
+archinstall="arch-install"
+archinstallpath="./$archinstall"
+
+ftphack="ftphack"
+ftphackpath="./$ftphack"
+
+testpci="testpci"
+testpcipath="test/$testpci"
+
+packageslist="packages.list"
+packageslistpath="packages/$packageslist"
+
+aurpackageslist="aur-packages.list"
+aurpackageslistpath="packages/$aurpackageslist"
+
+chrootstep="chroot-step"
+chrootsteppath="./$chrootstep"
+
+if [ -f "$archinstallpath" ];then
+	rm -f "$archinstallpath"
+fi
+if [ -f "$ftphackpath" ];then
+	rm -f "$ftphackpath"
+fi
+if [ -f "$testpcipath" ];then
+	rm -f "$testpcipath"
+fi
+if [ -f "$packageslistpath" ];then
+	rm -f "$packageslistpath"
+fi
+if [ -f "$aurpackageslistpath" ];then
+	rm -f "$aurpackageslistpath"
+fi
+if [ -f "$chrootsteppath" ];then
+	rm -f "$chrootsteppath"
+fi
+
+# wget the new version over ftp:
+wget "ftp://$user:$password@$devpc/$devpath/$archinstallpath"
+wget "ftp://$user:$password@$devpc/$devpath/$ftphackpath"
+wget "ftp://$user:$password@$devpc/$devpath/$testpcipath"
+wget "ftp://$user:$password@$devpc/$devpath/$packageslistpath"
+wget "ftp://$user:$password@$devpc/$devpath/$aurpackageslistpath"
+wget "ftp://$user:$password@$devpc/$devpath/$chrootsteppath"
+
+mv $testpci $testpcipath
+mv $packageslist $packageslistpath
+mv $aurpackageslist $aurpackageslistpath
+
+# Ensure the new version is executable:
+chmod 755 $archinstallpath
+chmod 755 $ftphackpath
+chmod 755 $chrootsteppath
