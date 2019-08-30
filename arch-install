@@ -44,6 +44,8 @@ else
 fi
 
 # Only when properly running:
+tzinfo="tz.info"
+tzinfopath="/tmp/$tzinfo"
 tzexit=1
 while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	# Prompt for user specified timezone info:
@@ -60,6 +62,7 @@ while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	# If the timezone exists, then link it:
 	if [ $timezonecheck -eq 0 ] && [ "$tzresponse" != "" ]; then
 		echo "Timezone found!"
+		echo "/usr/share/zoneinfo/$tzresponse" > $tzinfopath
 		tzexit=0
 	# Else ask if the user wants to try again:
 	else
@@ -91,6 +94,7 @@ if [ $timezoneselect == "custom" ]; then
 elif [ $timezoneselect == "default" ]; then
 	echo "Timezone will be set to default!"
 	tzresponse="UTC"
+	echo "/usr/share/zoneinfo/$tzresponse" > $tzinfopath 
 fi
 
 # Set the system clock
@@ -186,8 +190,8 @@ echo
 
 # To get the graphics, two categories are searched using lspci:
 if [ $testingmode == "on" ]; then 
-	vgacontrollers=$(cat testpci | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
-	dddcontrollers=$(cat testpci | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
+	vgacontrollers=$(cat test/testpci | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
+	dddcontrollers=$(cat test/testpci | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
 else
 	# VGA compatible cards, usually the main:
 	vgacontrollers=$(lspci -mm | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
@@ -257,13 +261,14 @@ fi
 
 # Installing following graphics drivers:
 echo "The following graphics drivers will be installed:"
-graphicsinstall="/tmp/graphics.list"
+graphicsinstall="graphics.list"
+graphicsinstallpath="/tmp/$graphicsinstall"
 for driver in "${!graphicsdrivers[@]}"
 do
-	echo -e "${graphicsdrivers[$driver]}" >> $graphicsinstall
+	echo -e "${graphicsdrivers[$driver]}" >> $graphicsinstallpath
 done
 # output the results nicely:
-sed 's/^/\t/' $graphicsinstall
+sed 's/^/\t/' $graphicsinstallpath
 echo
 
 ###########################################################################
@@ -272,13 +277,14 @@ echo
 
 echo "Setting up disk partitioning scheme..."
 # First the disk is added to the sfdisk command:
-instructs="/tmp/instructs.sfdisk"
+instructs="instructs.sfdisk"
+instructspath="/tmp/$instructs"
 # The label is gpt in this installation, as it supports both EFI and legacy BIOS:
-echo "label: gpt" > $instructs
+echo "label: gpt" > $instructspath
 # The device picked earlier is echoed into the instructions:
-echo "device: /dev/${disksavail[$choicenumber]}" >> $instructs
+echo "device: /dev/${disksavail[$choicenumber]}" >> $instructspath
 # The units are sectors, and the sector size is found:
-echo "unit: sectors" >> $instructs
+echo "unit: sectors" >> $instructspath
 # Unsure whether this needs to be used:
 #sectorsize=$(cat /sys/block/${disksavail[$choicenumber]}/queue/hw_sector_size)
 
@@ -287,20 +293,20 @@ echo "unit: sectors" >> $instructs
 if [ $efivarscheck -eq 2 ] 
 then
 	# Gives the BIOS GUID to the first partition created:
-	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructs
+	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructspath
 elif [ $efivarscheck -eq 0 ]
 then
 	# Creates an EFI partition:
-	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructs
+	echo "/dev/${disksavail[$choicenumber]}1 : start=2048, size=+1MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructspath
 fi
 # Swap is calculated:
 swapsize=$(echo "$ramavail" | awk '{printf "%d", $1 * 2}') 
-echo "/dev/${disksavail[$choicenumber]}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructs
+echo "/dev/${disksavail[$choicenumber]}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructspath
 # Finally, the rest of the disk will be allocated for data:
-echo "/dev/${disksavail[$choicenumber]}3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructs
+echo "/dev/${disksavail[$choicenumber]}3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructspath
 
 echo "Disk partitioning scheme will be the following:"
-cat $instructs
+cat $instructspath
 
 echo "Do you want to proceed or abort? [Y/n]:"
 read response
@@ -321,17 +327,17 @@ fi
 if [ $proceed == "yes" ]; then
 	echo "Formatting disk!"
 	if [ $testingmode == "on" ]; then
-	sfdisk -f /dev/${disksavail[$choicenumber]} < $instructs
+	sfdisk -f /dev/${disksavail[$choicenumber]} < $instructspath
 	else
-	sfdisk /dev/${disksavail[$choicenumber]} < $instructs
+	sfdisk /dev/${disksavail[$choicenumber]} < $instructspath
 	fi
 elif [ $proceed == "no" ]; then
 	echo "Aborting install..."
-	rm -f $instructs
+	rm -f $instructspath
 	exit 1
 else
 	echo "Error! Aborting!"
-	rm -f $instructs
+	rm -f $instructspath
 	exit 1
 fi
 echo
@@ -396,7 +402,19 @@ genfstab -U /mnt >> /mnt/etc/fstab
 ###########################################################################
 
 chrootstep="chroot-step"
-cp $chrootstep /mnt/root/$chrootstep
+chrootsteppath="$chrootstep"
+packageslist="packages.list"
+packageslistpath="packages/$packageslist"
+aurpackageslist="aur-packages.list"
+aurpackageslistpath="packages/$aurpackageslist"
+mkdir /mnt/root/packages
+mkdir /mnt/root/info
+cp $chrootsteppath /mnt/root/$chrootsteppath
+cp $instructspath /mnt/root/info/$instructs
+cp $tzinfopath /mnt/root/info/$tzinfo
+cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
+cp $packageslistpath /mnt/root/packages/$packageslist
+cp $aurpackageslistpath /mnt/root/packages/$aurpackageslist
 chmod 755 /mnt/root/$chrootstep
 echo "Arch-chrooting into disk..."
 arch-chroot /mnt /root/$chrootstep
@@ -405,8 +423,8 @@ echo "Done!"
 ###########################################################################
 # Clean-up 
 ###########################################################################
-rm -f /mnt/root/$chrootstep
 umount -R /mnt
 swapoff /dev/${disksavail[$choicenumber]}2
-rm -f $instructs
-rm -f $graphicsinstall
+rm -f $tzinfopath
+rm -f $instructspath
+rm -f $graphicsinstallpath
