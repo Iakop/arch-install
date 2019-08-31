@@ -11,9 +11,8 @@ while [ $proceed != "yes" ]; do
 	echo
 	# Check if the ftp password is correct by just establishing connection. Before removing anything!
 	# FIXME: Need to avoid downloading index all the time!
-	wget "ftp://$user:$password@$devpc" >/dev/null 2>&1
+	curl "ftp://$user:$password@$devpc" >/dev/null 2>&1
 	connectioncheck=$?
-	rm index.html
 	if [ $connectioncheck -eq 0 ]; then
 		proceed="yes"
 		echo "Correct password!"
@@ -55,36 +54,13 @@ aurpackageslistpath="packages/$aurpackageslist"
 chrootstep="chroot-step"
 chrootsteppath="./$chrootstep"
 
-if [ -f "$archinstallpath" ];then
-	rm -f "$archinstallpath"
-fi
-if [ -f "$ftphackpath" ];then
-	rm -f "$ftphackpath"
-fi
-if [ -f "$testpcipath" ];then
-	rm -f "$testpcipath"
-fi
-if [ -f "$packageslistpath" ];then
-	rm -f "$packageslistpath"
-fi
-if [ -f "$aurpackageslistpath" ];then
-	rm -f "$aurpackageslistpath"
-fi
-if [ -f "$chrootsteppath" ];then
-	rm -f "$chrootsteppath"
-fi
-
 # wget the new version over ftp:
-wget "ftp://$user:$password@$devpc/$devpath/$archinstallpath"
-wget "ftp://$user:$password@$devpc/$devpath/$ftphackpath"
-wget "ftp://$user:$password@$devpc/$devpath/$testpcipath"
-wget "ftp://$user:$password@$devpc/$devpath/$packageslistpath"
-wget "ftp://$user:$password@$devpc/$devpath/$aurpackageslistpath"
-wget "ftp://$user:$password@$devpc/$devpath/$chrootsteppath"
-
-mv $testpci $testpcipath
-mv $packageslist $packageslistpath
-mv $aurpackageslist $aurpackageslistpath
+curl "ftp://$user:$password@$devpc/$devpath/$archinstallpath" > $archinstallpath
+curl "ftp://$user:$password@$devpc/$devpath/$ftphackpath" > $ftphackpath
+curl "ftp://$user:$password@$devpc/$devpath/$testpcipath" > $testpcipath
+curl "ftp://$user:$password@$devpc/$devpath/$packageslistpath" > $packageslistpath
+curl "ftp://$user:$password@$devpc/$devpath/$aurpackageslistpath" > $aurpackageslistpath 
+curl "ftp://$user:$password@$devpc/$devpath/$chrootsteppath" > $chrootsteppath
 
 # Ensure the new version is executable:
 chmod 755 $archinstallpath

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+devmode="on"
 testingmode="off"
 
 ###########################################################################
@@ -62,7 +63,6 @@ while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	# If the timezone exists, then link it:
 	if [ $timezonecheck -eq 0 ] && [ "$tzresponse" != "" ]; then
 		echo "Timezone found!"
-		echo "/usr/share/zoneinfo/$tzresponse" > $tzinfopath
 		tzexit=0
 	# Else ask if the user wants to try again:
 	else
@@ -88,21 +88,17 @@ done
 
 # Apply changes to timezone as requested:
 if [ $timezoneselect == "custom" ]; then
-	echo "Linking to system timezone..."
-	ln -sf /usr/share/zoneinfo/$tzresponse /etc/localtime
-	echo "Done!"
+	echo "Timezone will be set to $tzresponse!"
 elif [ $timezoneselect == "default" ]; then
-	echo "Timezone will be set to default!"
+	echo "Timezone will be set to default (UTC)!"
 	tzresponse="UTC"
-	echo "/usr/share/zoneinfo/$tzresponse" > $tzinfopath 
 fi
+echo "/usr/share/zoneinfo/$tzresponse" > $tzinfopath
 
 # Set the system clock
 echo "Synchronizing the system clock..."
 timedatectl set-ntp true
 timedatectl set-timezone $tzresponse
-# Sleep 2 seconds to allow ntp service to start
-#sleep 2
 timedatectl status
 echo "Done setting time!"
 echo
@@ -188,6 +184,7 @@ echo
 # Detect hardware: Graphics
 ###########################################################################
 
+echo "Checking for graphics hardware..."
 # To get the graphics, two categories are searched using lspci:
 if [ $testingmode == "on" ]; then 
 	vgacontrollers=$(cat test/testpci | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
@@ -199,11 +196,15 @@ else
 	dddcontrollers=$(lspci -mm | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
 fi
 
-# Then a check is performed to see if there are occurances in either array:
-echo "Found VGA controllers:"
-echo -e "$vgacontrollers"
-echo "Found 3D controllers:"
-echo -e "$dddcontrollers"
+# Then a check is performed to see if there are occurances in either category:
+if [ "$vgacontrollers" != "" ]; then
+	echo "Found VGA controllers:"
+	echo -e "$vgacontrollers"
+fi
+if [ "$dddcontrollers" != "" ]; then
+	echo "Found 3D controllers:"
+	echo -e "$dddcontrollers"
+fi
 
 # Declare an array for vendors of 3d accelerated graphics:
 declare -a graphicsdrivers
@@ -234,6 +235,12 @@ if [ $? -eq 0 ]; then
 	graphicsdrivers+=("mesa" "lib32-mesa")
 fi
 
+# For now, it is assumed that a virtual machine doesn't require any other drivers for graphics:
+echo -e "$vgacontrollers" | grep -e VMware > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+	graphicsdrivers+=("")
+fi
+
 # Check for nvidia prime compatible 3d controllers:
 echo -e "$dddcontrollers" | grep -e NVIDIA > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -260,15 +267,20 @@ if [ $? -eq 0 ]; then
 fi
 
 # Installing following graphics drivers:
-echo "The following graphics drivers will be installed:"
 graphicsinstall="graphics.list"
 graphicsinstallpath="/tmp/$graphicsinstall"
-for driver in "${!graphicsdrivers[@]}"
-do
-	echo -e "${graphicsdrivers[$driver]}" >> $graphicsinstallpath
-done
-# output the results nicely:
-sed 's/^/\t/' $graphicsinstallpath
+
+if [ "${graphicsdrivers[0]}" != "" ]; then
+	echo "The following graphics drivers will be installed:"
+	for driver in "${!graphicsdrivers[@]}"
+	do
+		echo -e "${graphicsdrivers[$driver]}" >> $graphicsinstallpath
+	done
+	# output the results nicely:
+	sed 's/^/\t/' $graphicsinstallpath
+else
+	echo "No graphics drivers to install!"
+fi
 echo
 
 ###########################################################################
@@ -401,6 +413,8 @@ genfstab -U /mnt >> /mnt/etc/fstab
 # Arch-chroot and install packages from list
 ###########################################################################
 
+ftphack="ftphack"
+ftphackpath="$ftphack"
 chrootstep="chroot-step"
 chrootsteppath="$chrootstep"
 packageslist="packages.list"
@@ -409,12 +423,16 @@ aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 mkdir /mnt/root/packages
 mkdir /mnt/root/info
-cp $chrootsteppath /mnt/root/$chrootsteppath
+cp $ftphackpath /mnt/root/$ftphack
+cp $chrootsteppath /mnt/root/$chrootstep
 cp $instructspath /mnt/root/info/$instructs
 cp $tzinfopath /mnt/root/info/$tzinfo
-cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
+if [ -f $graphicsinstallpath ]; then
+	cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
+fi
 cp $packageslistpath /mnt/root/packages/$packageslist
 cp $aurpackageslistpath /mnt/root/packages/$aurpackageslist
+chmod 755 /mnt/root/$ftphack
 chmod 755 /mnt/root/$chrootstep
 echo "Arch-chrooting into disk..."
 arch-chroot /mnt /root/$chrootstep
