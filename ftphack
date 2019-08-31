@@ -16,9 +16,12 @@ while [ $proceed != "yes" ]; do
 	if [ $connectioncheck -eq 0 ]; then
 		proceed="yes"
 		echo "Correct password!"
-	else
+	elif [ $connectioncheck -eq 67 ]; then
 		proceed="no"
 		echo "Incorrect password, try again!"
+	else
+		proceed="no"
+		echo "Some error occured, try again: $connectioncheck"
 	fi
 done
 
@@ -35,12 +38,11 @@ else
 	mkdir "packages"
 fi
 
-# Remove any old versions:
 archinstall="arch-install"
-archinstallpath="./$archinstall"
+archinstallpath="$archinstall"
 
 ftphack="ftphack"
-ftphackpath="./$ftphack"
+ftphackpath="$ftphack"
 
 testpci="testpci"
 testpcipath="test/$testpci"
@@ -52,9 +54,9 @@ aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 
 chrootstep="chroot-step"
-chrootsteppath="./$chrootstep"
+chrootsteppath="$chrootstep"
 
-# wget the new version over ftp:
+# curl the new version over ftp:
 curl "ftp://$user:$password@$devpc/$devpath/$archinstallpath" > $archinstallpath
 curl "ftp://$user:$password@$devpc/$devpath/$ftphackpath" > $ftphackpath
 curl "ftp://$user:$password@$devpc/$devpath/$testpcipath" > $testpcipath
