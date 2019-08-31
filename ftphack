@@ -4,8 +4,24 @@ user="iakop"
 devpc="devpc"
 devpath="MyGitRepos/arch-install"
 
-echo -n "Please enter user password: "
-read -s password
+proceed="no"
+while [ $proceed != "yes" ]; do
+	echo -n "Please enter user password: "
+	read -s password
+	echo
+	# Check if the ftp password is correct by just establishing connection. Before removing anything!
+	# FIXME: Need to avoid downloading index all the time!
+	wget "ftp://$user:$password@$devpc" >/dev/null 2>&1
+	connectioncheck=$?
+	rm index.html
+	if [ $connectioncheck -eq 0 ]; then
+		proceed="yes"
+		echo "Correct password!"
+	else
+		proceed="no"
+		echo "Incorrect password, try again!"
+	fi
+done
 
 if [ -d "test" ]; then
 	echo "test directory already exists!"
