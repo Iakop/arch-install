@@ -91,4 +91,14 @@ fi
 echo "Done!"
 echo
 
+###########################################################################
+# TIME TO INSTALL PACKAGES! 
+###########################################################################
 
+echo "Installing packages specified in $packageslist..."
+# First, the proper package repositories must be setup.
+# First step is to enable multilib in the official repos:
+echo "Getting the newest mirrorlist..."
+# Denmark is placed on top. Go figure.
+curl "https://www.archlinux.org/mirrorlist/?country=DK&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" > /tmp/mirrorlist-dk
+curl "https://www.archlinux.org/mirrorlist/?country=all&protocol=https&ip_version=4&ip_version=6&use_mirror_status=on" > /tmp/mirrorlist-all
