@@ -1,3 +1,94 @@
 #!/bin/bash
 
+devmode="on"
+devpc="devpc"
+testingmode="off"
+
+# To indicate that the chroot-step succeded:
 echo "Hello from $(pwd)!"
+echo
+
+tzinfo="tz.info"
+tzinfopath="/root/info/$tzinfo"
+
+###########################################################################
+# Set the timezone from info given in previous step 
+###########################################################################
+
+# Apply timezone info
+echo "Applying timezone info..."
+if [ -f $tzinfopath ]; then
+	ln -sf $(cat $tzinfopath) /etc/localtime
+	# Run hwclock to generate /etc/adjtime:
+	hwclock --systohc
+else
+	echo "Missing timezone info! Aborting..."
+	exit 1
+fi
+
+# Apply locale info
+# For me this will always be english, nothing else:
+echo "Applying locale..."
+#FIXME: There should be a more elegant way to make sed remove comment char:
+sed 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen > /tmp/locale.gen 
+sed 's/#da_DK.UTF-8 UTF-8/da_DK.UTF-8 UTF-8/' /tmp/locale.gen > /etc/locale.gen
+rm /tmp/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+echo
+
+###########################################################################
+# Set keyboard type. For now, always to danish
+###########################################################################
+
+# Set keyboard type:
+keyboardtype="dk-latin1"
+echo "Setting keyboard layout to $keyboardtype"
+echo "KEYMAP=$keyboardtype" > /etc/vconsole.conf
+echo
+
+###########################################################################
+# Set the hostname to users preference 
+###########################################################################
+
+# Prompt for hostname:
+proceed="no"
+while [ $proceed == "no" ]; do
+	read -p "Please enter the name of the computer: " hostname
+	proceed="retry"
+	while [ $proceed == "retry" ]; do
+		echo -e "Is the name \"$hostname\" okay? [Y/n]:"
+		read response
+		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+			proceed="yes"
+		elif [ "${response,,}" == "n" ]; then
+			proceed="no"		
+		else
+			echo "I did not understand that, please try again!"
+			proceed="retry"
+		fi
+	done
+done
+
+echo "Writing hostname to /etc/hosts..."
+echo "# Static table lookup for hostnames." > /etc/hosts
+echo "# See hosts(5) for details." >> /etc/hosts
+echo -e "127.0.0.1\tlocalhost" >> /etc/hosts
+echo -e "::1\t\tlocalhost" >> /etc/hosts
+echo -e "127.0.1.1\t$hostname.localdomain\t$hostname" >> /etc/hosts
+if [ $devmode == "on" ]; then
+	devips=("192.168.0.17" "192.168.0.18" "170.20.10.2" "170.20.10.3")
+	for ip in "${!devips[@]}"; do
+		echo "Checking for development pc on IP: ${devips[$ip]}"
+		ping -c1 ${devips[$ip]} -W1 > /dev/null 2>&1
+		connectioncheck=$?
+		if [ $connectioncheck -eq 0 ]; then
+			echo "Found connection on ${devips[$ip]}!"
+			echo -e "${devips[$ip]}\t$devpc" >> /etc/hosts
+		fi
+	done
+fi
+echo "Done!"
+echo
+
+
