@@ -81,7 +81,7 @@ echo -e "127.0.0.1\tlocalhost" >> /etc/hosts
 echo -e "::1\t\tlocalhost" >> /etc/hosts
 echo -e "127.0.1.1\t$hostname.localdomain\t$hostname" >> /etc/hosts
 if [ $devmode == "on" ]; then
-	devips=("192.168.0.17" "192.168.0.18" "170.20.10.2" "170.20.10.3")
+	devips=("192.168.0.17" "192.168.0.18" "172.20.10.2" "172.20.10.3")
 	for ip in "${!devips[@]}"; do
 		echo "Checking for development pc on IP: ${devips[$ip]}"
 		ping -c1 ${devips[$ip]} -W1 > /dev/null 2>&1
