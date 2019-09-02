@@ -10,6 +10,8 @@ echo
 
 tzinfo="tz.info"
 tzinfopath="/root/info/$tzinfo"
+graphicsinstall="graphics.list"
+graphicsinstallpath="/root/packages/$graphicsinstall"
 packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
 aurpackageslist="aur-packages.list"
@@ -150,9 +152,32 @@ echo "Updating the pacman repos..."
 pacman -Syu
 echo
 
-# Time to install the programs!
-echo "Installing packages from pacman repos:"
-pacman -S --needed - < "$packageslistpath"
+proceed="retry"
+# Would you like to install the packages?
+while [ $proceed == "retry" ]; do
+	echo -n "Would you like to install the packages specified in $packageslistpath? [Y/n]: "
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+if [ $proceed == "yes" ]; then
+	# Create the full pacman install list:
+	if [ -f $graphicsinstallpath ]; then
+		cat "$graphicsinstallpath" "$packageslistpath" > /tmp/toinstall.list
+	else
+		cat "$packageslistpath" > /tmp/toinstall.list
+	fi
+	# Time to install the programs!
+	echo "Installing packages from pacman repos:"
+	pacman -S --needed - < /tmp/toinstall.list
+fi
 echo
 
 ###########################################################################
@@ -178,6 +203,69 @@ while [ $proceed == "no" ]; do
 	done
 done
 
+# The groups the user will be added to by default:
+groups="wheel,ftp,games,http,log,rfkill,sys,systemd-journal,users,uucp"
+echo "The user will be added to the following default groups:"
+echo -e "\t$(sed 's/,/\n\t/g' <<< $groups)"
+echo
+
+# Checks will be performed for extra groups to add the user to:
+extragroups=""
+echo "Checking for extra groups to add user to..."
+# If bumblebee is installed, the user must be added to the group:
+pacman -Qs bumblebee >/dev/null 2<&1
+bumblebeecheck=$?
+if [ $bumblebeecheck -eq 0 ]; then
+	extragroups+=",bumblebee"
+else
+	extragroups+=""
+fi
+echo -n "The user will be added to the following extra groups:"
+echo -e "$(sed 's/,/\n\t/g' <<< $extragroups)"
+echo
+
+echo "Now creating user $username..."
+useradd -m -U -G $groups$extragroups -s /bin/bash $username
+# until the passwd returns 0, prompt the user:
+echo "Setting password for $username..."
+retval=10
+while [ $retval -ne 0 ]; do
+	passwd $username
+	retval=$?
+done
+echo
+
+echo "Applying privileges in the sudoers file..."
+# Give the privileges in the sudoers file:
+pacman -Qs sudo >/dev/null 2>&1
+sudoretval=$?
+if [ $sudoretval -eq 0 ]; then
+	grep "%wheel ALL=(ALL) ALL" /etc/sudoers >/dev/null 2>&1
+	retval=$?
+	if [ $retval -eq 0 ]; then
+		linetoedit=$(grep -n "%wheel ALL=(ALL) ALL" /etc/sudoers | awk -F ':' '{print $1}')
+		sed "${linetoedit}s/^# //" /etc/sudoers > /tmp/sudoers
+		cp /tmp/sudoers /etc/sudoers
+	else
+		echo "Manual visudo needed..."
+		sleep 2
+		visudo
+	fi
+else
+	echo "sudo not installed!"
+fi
+
+echo "Please enter password for root..."
+retval=10
+while [ $retval -ne 0 ]; do
+	passwd
+	retval=$?
+done
+echo
+
+#echo "Now switching to user $username..."
+#su $username -c 
+#echo "Done!"
 # Now we set up pikaur:
 #echo "Setting up AUR helper pikaur..."
 #pacman -S --needed git
