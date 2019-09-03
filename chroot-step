@@ -16,6 +16,7 @@ packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="/root/packages/$aurpackageslist"
+configscriptspath="/root/configscripts/"
 
 ###########################################################################
 # Set the timezone from info given in previous step 
@@ -292,7 +293,7 @@ if [ $proceed == "yes" ]; then
 		pacman -S git
 	fi
 	echo "Building pikaur AUR helper as $username..."
-	(cd /tmp; sudo -u $username git clone https://aur.archlinux.org/pikaur.git; cd /tmp/pikaur; sudo -u $username makepkg -fsri)"
+	(cd /tmp; sudo -u $username git clone https://aur.archlinux.org/pikaur.git; cd /tmp/pikaur; sudo -u $username makepkg -fsri)
 fi
 
 proceed="retry"
@@ -315,3 +316,33 @@ if [ $proceed == "yes" ]; then
 	# WARNING, this will take time to build.
 	sudo -u $username pikaur -S --needed $(tr '\n' ' ' < $aurpackageslistpath)
 fi
+echo
+
+###########################################################################
+# Create configurations for the packages that need it 
+###########################################################################
+
+while [ $proceed == "retry" ]; do
+	echo -e "Would you like to run the configuration scripts in $configscriptspath? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+# All the configurations are run as root,
+# only sudoing into another user if user specific actions are to be taken.
+configscripts=($(ls $configscriptspath))
+if [ $proceed == "yes" ]; then
+	for config in ${configscripts[@]}; do
+		echo "Running configuration $config..."
+		chmod 755 $configscriptspath$config
+		$configscriptspath$config
+	done	
+fi
+echo

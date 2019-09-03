@@ -29,6 +29,8 @@ List of todos:
 	- Run pikaur to install aur-packages.list. &#x2713;
 ___
 **You are here:**
+- Add ILoveCandy and Color to pacman config (HEY! THAT'S HOW I LIKE IT!)
+- Add keys to AUR user keyring: (Currently for spotify and tor-browser)
 - Add configuration scripts to the applications that need them.
 	- Configure the graphics drivers if necessary.
 		- Definitely configure bumblebee.
