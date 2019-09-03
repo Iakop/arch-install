@@ -247,7 +247,8 @@ if [ $sudoretval -eq 0 ]; then
 		sed "${linetoedit}s/^# //" /etc/sudoers > /tmp/sudoers
 		cp /tmp/sudoers /etc/sudoers
 	else
-		echo "Manual visudo needed..."
+		echo "Manual visudo needed to give wheel rights..."
+		# For ensuring the user reads the reasoning, sleep 2:
 		sleep 2
 		visudo
 	fi
@@ -263,14 +264,54 @@ while [ $retval -ne 0 ]; do
 done
 echo
 
-#echo "Now switching to user $username..."
-#su $username -c 
-#echo "Done!"
-# Now we set up pikaur:
-#echo "Setting up AUR helper pikaur..."
-#pacman -S --needed git
-#git clone https://aur.archlinux.org/pikaur.git
-#(cd pikaur; makepkg -fsri)
-#rm -r pikaur
-#echo
+###########################################################################
+# Add AUR helper and AUR packages: 
+###########################################################################
+
+proceed="retry"
+while [ $proceed == "retry" ]; do
+	echo -e "Would you like to install the AUR helper pikaur? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+# Install pikaur
+if [ $proceed == "yes" ]; then
+	# Check for git on the machine, if not present, install it.
+	pacman -Qs git >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing git..."
+		pacman -S git
+	fi
+	echo "Building pikaur AUR helper as $username..."
+	(cd /tmp; sudo -u $username git clone https://aur.archlinux.org/pikaur.git; cd /tmp/pikaur; sudo -u $username makepkg -fsri)"
+fi
+
+proceed="retry"
+while [ $proceed == "retry" ]; do
+	echo -e "Would you like to install AUR packages listed in $aurpackageslistpath? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
 # Install aur packages:
+#if [ $proceed == "yes" ]; then
+#	# Switch to user, and get the packages with pikaur:
+#	# WARNING, this will take time to build.
+#	sudo -u $username pikaur -S 
+#fi
