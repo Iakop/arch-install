@@ -310,8 +310,8 @@ while [ $proceed == "retry" ]; do
 done
 
 # Install aur packages:
-#if [ $proceed == "yes" ]; then
-#	# Switch to user, and get the packages with pikaur:
-#	# WARNING, this will take time to build.
-#	sudo -u $username pikaur -S 
-#fi
+if [ $proceed == "yes" ]; then
+	# Switch to user, and get the packages with pikaur:
+	# WARNING, this will take time to build.
+	sudo -u $username pikaur -S --needed $(tr '\n' ' ' < $aurpackageslistpath)
+fi
