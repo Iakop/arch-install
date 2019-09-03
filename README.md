@@ -21,18 +21,19 @@ List of todos:
 - Got arch-chroot working with a sub-script to run from the new root.&#x2713;
 - Pacstrap base &#x2713;
 	- Generate fstab &#x2713;
+- Set the timezone, locale and vconsole keyboard settings. &#x2713;
+- Prompt user for hostname, username, password, root password. &#x2713;
+- Install the packages specified in packages.list. &#x2713;
+	- Install the graphics drivers mentioned in their install list. &#x2713;
+	- Build and install pikaur. &#x2713;
+	- Run pikaur to install aur-packages.list. &#x2713;
 ___
 **You are here:**
-- Set the timezone, locale and vconsole keyboard settings.
+- Add configuration scripts to the applications that need them.
+	- Configure the graphics drivers if necessary.
+		- Definitely configure bumblebee.
 ___
 
-- Install the packages specified in packages.list
-	- Build and install pikaur.
-	- Run pikaur to install aur-packages.list.
-- Install the graphics drivers mentioned in their install list.
-	- Configure the drivers if necessary.
-		- Definitely configure bumblebee.
-- Prompt user for hostname, username, password, root password.
 - Generate initramfs
 - Install bootloader (for now, grub)
 	- Maybe in the future, support adding an entry in existing bootloader.
@@ -40,17 +41,11 @@ ___
 That covers the basic setup, and from then on, I will script all my ricing as well.
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 
-An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script (the name `ftphack` is already added in `.gitignore`, but **please** remember not to push your password and username!)
+An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script. The script I have made is `ftphack`. It needs as a minimum the host machine's ip in `/etc/hosts` like so, for example:
 
 ```bash
-#!/bin/bash
-
-# Remove any old versions:
-rm arch-install
-# wget the new version over ftp:
-wget ftp://username:password@hostaddress/location/of/arch-install
-# Ensure the new version is executable:
-chmod 755 arch-install
+[ip address]	[hostname]
+192.168.x.x	devpc
 ```
 
 That should speed up development somewhat. Of course the script needs to be gotten on the VM first, but that should be simple through `wget` as well!
