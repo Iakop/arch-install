@@ -58,6 +58,9 @@ packageslistpath="packages/$packageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 
+aurkeys="aur.keys"
+aurkeyspath="packages/$aurkeys"
+
 chrootstep="chroot-step"
 chrootsteppath="$chrootstep"
 
@@ -70,6 +73,7 @@ curl "ftp://$user:$password@$devpc/$devpath/$testpcipath" > $testpcipath
 curl "ftp://$user:$password@$devpc/$devpath/$packageslistpath" > $packageslistpath
 curl "ftp://$user:$password@$devpc/$devpath/$aurpackageslistpath" > $aurpackageslistpath 
 curl "ftp://$user:$password@$devpc/$devpath/$chrootsteppath" > $chrootsteppath
+curl "ftp://$user:$password@$devpc/$devpath/$aurkeyspath" > $aurkeyspath
 
 # Configscripts might change, so they are found by curl'ing an index:
 configscripts=($(curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/" 2>/dev/null | awk '{print $9}'))

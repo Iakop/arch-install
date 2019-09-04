@@ -16,6 +16,8 @@ packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="/root/packages/$aurpackageslist"
+aurkeys="aur.keys"
+aurkeyspath="/root/packages/$aurkeys"
 configscriptspath="/root/configscripts/"
 
 ###########################################################################
@@ -312,6 +314,25 @@ done
 
 # Install aur packages:
 if [ $proceed == "yes" ]; then
+	# First, search for keys. THe responsibility of providing key info lies within the package folder.
+	# The keys needed for a certain AUR package is the first field, and the second is the key itself.
+	
+	# Try to get the newest key from each mail:
+	keys=($(tr ' ' ',' < $aurkeyspath))
+	for key in "${keys[@]}"; do
+		package=$(echo "$key" | awk -F ',' '{print $1}')
+		grep $package $aurpackageslistpath >/dev/null 2>&1
+		retval=$?
+
+		if [ $retval -eq 0 ]; then
+			echo "Adding key $package..."
+			keyid=$(echo "$key" | awk -F ',' '{print $2}')
+			sudo -u $username gpg --recv-keys $keyid
+		else
+			echo "Package for key $package is not specified to be installed!"
+		fi
+	done
+
 	# Switch to user, and get the packages with pikaur:
 	# WARNING, this will take time to build.
 	sudo -u $username pikaur -S --needed $(tr '\n' ' ' < $aurpackageslistpath)
@@ -322,6 +343,7 @@ echo
 # Create configurations for the packages that need it 
 ###########################################################################
 
+proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to run the configuration scripts in $configscriptspath? [Y/n]:"
 	read response
@@ -339,9 +361,8 @@ done
 # only sudoing into another user if user specific actions are to be taken.
 configscripts=($(ls $configscriptspath))
 if [ $proceed == "yes" ]; then
-	for config in ${configscripts[@]}; do
+	for config in "${configscripts[@]}"; do
 		echo "Running configuration $config..."
-		chmod 755 $configscriptspath$config
 		$configscriptspath$config
 	done	
 fi
