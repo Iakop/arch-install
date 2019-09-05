@@ -121,6 +121,19 @@ sed "${linetoedit}s/^#//" /etc/pacman.conf > /tmp/pacman.conf
 linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
 sed "${linetoedit}s/^#//" /tmp/pacman.conf > /etc/pacman.conf 
 
+# Enable ILoveCandy and Color
+echo "Enabling Color and ILoveCandy..."
+linetoedit=$(grep -n "Color" /etc/pacman.conf | awk -F ':' '{print $1}')
+sed "${linetoedit}s/^#//" /etc/pacman.conf > /tmp/pacman.conf
+cp /tmp/pacman.conf /etc/pacman.conf
+
+grep "ILoveCandy" /etc/pacman.conf
+retval=$?
+if [ $retval -ne 0 ]; then
+	linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
+	sed -i "${linetoedit}i\ \nILoveCandy" /etc/pacman.conf
+fi
+
 # Would you like to add sublime repo to pacman.conf:
 proceed="retry"
 while [ $proceed == "retry" ]; do

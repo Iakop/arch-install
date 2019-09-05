@@ -22,15 +22,18 @@ List of todos:
 - Pacstrap base &#x2713;
 	- Generate fstab &#x2713;
 - Set the timezone, locale and vconsole keyboard settings. &#x2713;
+- Get pacman mirrorlist and enable settings. &#x2713;
+	- Add ILoveCandy and Color to pacman config (HEY! THAT'S HOW I LIKE IT!) &#x2713;
+	- Enable multilib. &#x2713;
+	- Add sublimetext repo for dev-version. &#x2713;
 - Prompt user for hostname, username, password, root password. &#x2713;
 - Install the packages specified in packages.list. &#x2713;
 	- Install the graphics drivers mentioned in their install list. &#x2713;
 	- Build and install pikaur. &#x2713;
+	- Add keys to AUR user keyring. &#x2713;
 	- Run pikaur to install aur-packages.list. &#x2713;
 ___
 **You are here:**
-- Add ILoveCandy and Color to pacman config (HEY! THAT'S HOW I LIKE IT!)
-- Add keys to AUR user keyring: (Currently for spotify and tor-browser)
 - Add configuration scripts to the applications that need them.
 	- Configure the graphics drivers if necessary.
 		- Definitely configure bumblebee.
