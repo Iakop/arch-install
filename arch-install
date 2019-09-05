@@ -421,21 +421,32 @@ packageslist="packages.list"
 packageslistpath="packages/$packageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
+aurkeys="aur.keys"
+aurkeyspath="packages/$aurkeys"
+configscriptspath="configscripts"
+
 mkdir /mnt/root/packages
 mkdir /mnt/root/info
-cp $ftphackpath /mnt/root/$ftphack
-cp $chrootsteppath /mnt/root/$chrootstep
-cp $instructspath /mnt/root/info/$instructs
-cp $tzinfopath /mnt/root/info/$tzinfo
+mkdir /mnt/root/configscripts
+
+cp $ftphackpath /mnt/root/$ftphackpath
+cp $chrootsteppath /mnt/root/$chrootsteppath
+cp $instructspath /mnt/root/$instructspath
+cp $tzinfopath /mnt/root/$tzinfopath
 if [ -f $graphicsinstallpath ]; then
-	cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
+	cp $graphicsinstallpath /mnt/root/$graphicsinstallpath
 fi
-cp $packageslistpath /mnt/root/packages/$packageslist
-cp $aurpackageslistpath /mnt/root/packages/$aurpackageslist
-chmod 755 /mnt/root/$ftphack
-chmod 755 /mnt/root/$chrootstep
+cp $packageslistpath /mnt/root/$packageslistpath
+cp $aurpackageslistpath /mnt/root/$aurpackageslistpsth
+configscripts=($(curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/" 2>/dev/null | awk '{print $9}'))
+for config in "${configscripts[@]}"; do
+	cp $configscriptspath/$config /mnt/root/$configscriptspath/$config
+	chmod 755 /mnt/root/$configscriptspath/$config
+done
+chmod 755 /mnt/root/$ftphackpath
+chmod 755 /mnt/root/$chrootsteppath
 echo "Arch-chrooting into disk..."
-arch-chroot /mnt /root/$chrootstep
+arch-chroot /mnt /root/$chrootsteppath
 echo "Done!"
 
 ###########################################################################
