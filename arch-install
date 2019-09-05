@@ -431,13 +431,14 @@ mkdir /mnt/root/configscripts
 
 cp $ftphackpath /mnt/root/$ftphackpath
 cp $chrootsteppath /mnt/root/$chrootsteppath
-cp $instructspath /mnt/root/$instructspath
-cp $tzinfopath /mnt/root/$tzinfopath
+cp $instructspath /mnt/root/info/$instructs
+cp $tzinfopath /mnt/root/info/$tzinfo
 if [ -f $graphicsinstallpath ]; then
 	cp $graphicsinstallpath /mnt/root/$graphicsinstallpath
 fi
 cp $packageslistpath /mnt/root/$packageslistpath
-cp $aurpackageslistpath /mnt/root/$aurpackageslistpsth
+cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
+cp $aurkeyspath /mnt/root/$aurkeyspath
 configscripts=($(curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/" 2>/dev/null | awk '{print $9}'))
 for config in "${configscripts[@]}"; do
 	cp $configscriptspath/$config /mnt/root/$configscriptspath/$config
