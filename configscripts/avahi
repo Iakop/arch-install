@@ -1,0 +1,35 @@
+#!/bin/bash
+
+pacman -Qs nss-mdns >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package nss-mdns! Exiting."
+	exit 1
+fi
+
+grep "mdns_minimal \[NOTFOUND=return\] resolve" /etc/nsswitch.conf >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	echo "Configuration already applied!"
+else
+	echo "Applying configuration..."
+	# Place the mdns_minimal settings into nsswitch.conf
+	sed 's/resolve/mdns_minimal [NOTFOUND=return] &/' /etc/nsswitch.conf > /tmp/nsswitch.conf
+
+	# Check that it went through as expected:
+	grep "mdns_minimal \[NOTFOUND=return\] resolve" /tmp/nsswitch.conf >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Configuration failed. Disabling avahi-daemon and exiting."
+		systemctl disable avahi-daemon.service
+		exit 1
+	fi
+	
+	# After, copy configuration to /etc/
+	cp /tmp/nsswitch.conf /etc/nsswitch.conf
+fi
+
+# Enable service:
+echo "Enabling avahi-daemon..."
+systemctl enable avahi-daemon.service >/dev/null 2>&1
+echo "Done!"
