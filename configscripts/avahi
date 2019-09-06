@@ -1,5 +1,12 @@
 #!/bin/bash
 
+pacman -Qs avahi >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package avahi! Exiting."
+	exit 1
+fi
+
 pacman -Qs nss-mdns >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
