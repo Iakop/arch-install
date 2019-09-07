@@ -1,0 +1,62 @@
+#!/bin/bash
+
+pkgname="ufw"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Extra check for iptables (it's a dependency)
+pacman -Qs iptables >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing config dependency iptables! Exiting."
+	exit 1
+fi
+
+# UFW will by default deny connections from the outside world in.
+# However, connections within same network is fine:
+# The rest is unspecified as of now, and can be edited in the graphical gufw package.
+
+# Check if changes are already applied, else apply them:
+grep "\-A ufw-user-input -s 192.168.0.0/24 -j ACCEPT" /etc/ufw/user.rules >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	echo "Settings already applied!"
+else
+	echo "Applying ufw configuration..."
+	# Insert the configurations manually into /etc/ufw/user.rules
+	linetoedit=$(grep -n "### RULES ###" /etc/ufw/user.rules | awk -F ':' '{print $1 + 1}')
+	sed -i "${linetoedit}i -A ufw-user-input -s 192.168.0.0/24 -j ACCEPT" /etc/ufw/user.rules
+	
+	# Check whether or not the changes are as expected:
+	grep "\-A ufw-user-input -s 192.168.0.0/24 -j ACCEPT" /etc/ufw/user.rules >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Configuration failed (Error code: $retval). Disabling ufw service and exiting."
+		systemctl disable ufw.service >/dev/null 2>&1
+		exit 1
+	fi
+fi
+
+###############
+# End of config
+###############
+# Enable service:
+echo "Enabling ufw service..."
+systemctl enable ufw.service >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Failed enabling ufw service (Error code: $retval). Exiting."
+	exit 1
+fi
+echo "Done!"
