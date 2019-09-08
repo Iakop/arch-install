@@ -1,0 +1,49 @@
+#!/bin/bash
+
+pkgname="imagemagick"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check if ghostscript is installed:
+pacman -Qs ghostscript >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package ghostscript! Exiting."
+	exit 1
+fi
+
+# Check if changes are already applied, else apply them:
+grep '<policy domain="coder" rights="read | write" pattern="PDF" />' /etc/ImageMagick-7/policy.xml >/dev/null 2>&1 
+retval=$?
+if [ $retval -eq 0 ]; then
+	echo "Settings already applied!"
+else
+	echo "Applying settings for ImageMagick..."
+	# Look for the end of the policymap:
+	linetoedit=$(grep -n "</policymap>" /etc/ImageMagick-7/policy.xml | awk -F ':' '{print $1}')
+	sed -i "${linetoedit}i \ \ <policy domain=\"coder\" rights=\"read | write\" pattern=\"PDF\" />" /etc/ImageMagick-7/policy.xml
+	
+	# Check whether or not the changes are as expected:
+	grep '<policy domain="coder" rights="read | write" pattern="PDF" />' /etc/ImageMagick-7/policy.xml >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Configuration failed (Error code: $retval)."
+		exit 1
+	fi
+fi
+
+###############
+# End of config
+###############
+echo "Done!"
