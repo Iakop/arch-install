@@ -1,0 +1,70 @@
+#!/bin/bash
+
+pkgname="bluez"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check if changes are already applied, else apply them:
+grep "^[^#]" /etc/bluetooth/main.conf | grep "AutoEnable" >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	echo "Settings already applied!"
+else
+	proceed="retry"
+	while [ $proceed == "retry" ]; do
+		echo -n "Would you like to autoenable bluetooth connections to known devices? [Y/n]: "
+		read response
+		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+			proceed="yes"
+		elif [ "${response,,}" == "n" ]; then
+			proceed="no"		
+		else
+			echo "I did not understand that, please try again!"
+			proceed="retry"
+		fi
+	done
+
+	if [ $proceed == "yes" ]; then
+		echo "Applying bluetooth configuration to autoenable connections on known devices..."
+		enablestate="true"
+	else
+		echo "Applying bluetooth configuration to not autoenable connections on known devices..."
+		enablestate="false"
+	fi
+	linetoedit=$(grep -n "AutoEnable" /etc/bluetooth/main.conf | awk -F ':' '{print $1}')
+	sed "${linetoedit}s/^#//" /etc/bluetooth/main.conf > /tmp/bluetooth.conf
+	sed "s/\(AutoEnable=\).*/\1$enablestate/" /tmp/bluetooth.conf > /etc/bluetooth/main.conf
+	
+	# Check whether or not the changes are as expected:
+	grep "^[^#]" /etc/bluetooth/main.conf | grep "AutoEnable=$enablestate" >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Configuration failed (Error code: $retval). Disabling bluetooth service and exiting."
+		systemctl disable bluetooth.service >/dev/null 2>&1
+		exit 1
+	fi
+fi
+
+###############
+# End of config
+###############
+# Enable service:
+echo "Enabling bluetooth service..."
+systemctl enable bluetooth.service >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Failed enabling bluetooth service (Error code: $retval). Exiting."
+	exit 1
+fi
+echo "Done!"
