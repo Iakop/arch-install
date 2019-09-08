@@ -1,0 +1,37 @@
+#!/bin/bash
+
+pkgname="networkmanager"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check for dhclient, and inform if it is missing:
+pacman -Qs dhclient >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package dhclient. DHCP support will be limited." 
+fi
+
+###############
+# End of config
+###############
+# Enable service:
+echo "Enabling NetworkManager service..."
+systemctl enable NetworkManager.service >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Error enabling service! exiting."
+	exit 1
+fi
+
+echo "Done!"
