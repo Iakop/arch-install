@@ -1,0 +1,61 @@
+#!/bin/bash
+
+pkgname="bumblebee"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check for required packages, and inform if it is missing:
+pacman -Qs mesa >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package mesa! Exiting." 
+fi
+
+pacman -Qs nvidia >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package nvidia! Exiting." 
+fi
+
+pacman -Qs xf86-video-intel >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package xf86-video-intel! Exiting." 
+fi
+
+pacman -Qs lib32-virtualgl >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package lib32-virtualgl! Exiting." 
+fi
+
+pacman -Qs lib32-nvidia-utils >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package lib32-nvidia-utils! Exiting." 
+fi
+
+###############
+# End of config
+###############
+# Enable service:
+echo "Enabling bumblebeed service..."
+systemctl enable bumblebeed.service >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Error enabling bumblebeed service! exiting."
+	exit 1
+fi
+
+echo "Done!"
