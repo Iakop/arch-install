@@ -42,9 +42,9 @@ else
 		echo "Applying bluetooth configuration to not autoenable connections on known devices..."
 		enablestate="false"
 	fi
-	linetoedit=$(grep -n "AutoEnable" /etc/bluetooth/main.conf | awk -F ':' '{print $1}')
+	linetoedit=$(grep -n "AutoEnable=" /etc/bluetooth/main.conf | awk -F ':' '{print $1}')
 	sed "${linetoedit}s/^#//" /etc/bluetooth/main.conf > /tmp/bluetooth.conf
-	sed "s/\(AutoEnable=\).*/\1$enablestate/" /tmp/bluetooth.conf > /etc/bluetooth/main.conf
+	sed "s/\(AutoEnable=\).*/\1${enablestate}/" /tmp/bluetooth.conf > /etc/bluetooth/main.conf
 	
 	# Check whether or not the changes are as expected:
 	grep "^[^#]" /etc/bluetooth/main.conf | grep "AutoEnable=$enablestate" >/dev/null 2>&1
