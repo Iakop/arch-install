@@ -32,8 +32,6 @@ List of todos:
 	- Build and install pikaur. &#x2713;
 	- Add keys to AUR user keyring. &#x2713;
 	- Run pikaur to install aur-packages.list. &#x2713;
-___
-**You are here:**
 - Add configuration scripts to the applications that need them.
 	- avahi &#x2713;
 	- bluez &#x2713;
@@ -42,12 +40,13 @@ ___
 	- imagemagick &#x2713;
 	- networkmanager &#x2713;
 	- openssh &#x2713;
-	- bumblebee.
+	- bumblebee &#x2713;
 ___
-
+**You are here:**
 - Add systemwide mime-app definitions for:
 	- feh
 	- vim
+___
 - Add user configurables:
 	- dotfiles
 		- i3-gaps
