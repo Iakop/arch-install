@@ -35,10 +35,28 @@ List of todos:
 ___
 **You are here:**
 - Add configuration scripts to the applications that need them.
-	- Configure the graphics drivers if necessary.
-		- Definitely configure bumblebee.
+	- avahi &#x2713;
+	- bluez &#x2713;
+	- iptables &#x2713;
+	- ufw &#x2713;
+	- imagemagick &#x2713;
+	- networkmanager &#x2713;
+	- openssh &#x2713;
+	- bumblebee.
 ___
 
+- Add systemwide mime-app definitions for:
+	- feh
+	- vim
+- Add user configurables:
+	- dotfiles
+		- i3-gaps
+		- i3status
+		- compton
+		- .Xresources (urxvt)
+		- .bashrc
+		- .vnc/xstartup
+		- .config/redshift
 - Generate initramfs
 - Install bootloader (for now, grub)
 	- Maybe in the future, support adding an entry in existing bootloader.
