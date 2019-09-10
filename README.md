@@ -44,21 +44,18 @@ List of todos:
 - Add systemwide mime-app definitions for: &#x2713;
 	- feh &#x2713;
 	- vim &#x2713;
+- Add user configurables: &#x2713;
+	- dotfiles &#x2713;
 ___
 **You are here:**
-- Add user configurables:
-	- dotfiles
-		- i3-gaps
-		- i3status
-		- compton
-		- .Xresources (urxvt)
-		- .bashrc
-		- .vnc/xstartup
-		- .config/redshift
-___
 - Generate initramfs
 - Install bootloader (for now, grub)
-	- Maybe in the future, support adding an entry in existing bootloader.
+___
+
+- Add linuxscripts to installer
+- Add xorg configs of keyboard
+- Add systemwide retroarch config
+	- And userwide config 
 
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 

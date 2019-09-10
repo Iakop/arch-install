@@ -411,3 +411,37 @@ for application in "${applications[@]}"; do
 		cp $applicationspath/$application /usr/share/applications/$application
 	fi
 done
+echo
+
+###########################################################################
+# Apply dotfiles to user 
+###########################################################################
+
+# The dotfiles repo is cloned to tmp:
+proceed="retry"
+while [ $proceed == "retry" ]; do
+	echo -e "Would you like to install the iakop dotfiles? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+# Install dotfiles
+if [ $proceed == "yes" ]; then
+	# Check for git on the machine, if not present, install it.
+	pacman -Qs git >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing git..."
+		pacman -S git
+	fi
+	echo "Building pikaur AUR helper as $username..."
+	(cd /tmp; sudo -u $username git clone https://github.com/iakop/dotfiles; cd /tmp/dotfiles; sudo -u $username /tmp/dotfiles/install)
+fi
+echo
