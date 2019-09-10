@@ -32,7 +32,7 @@ List of todos:
 	- Build and install pikaur. &#x2713;
 	- Add keys to AUR user keyring. &#x2713;
 	- Run pikaur to install aur-packages.list. &#x2713;
-- Add configuration scripts to the applications that need them.
+- Add configuration scripts to the applications that need them. &#x2713;
 	- avahi &#x2713;
 	- bluez &#x2713;
 	- iptables &#x2713;
@@ -41,12 +41,11 @@ List of todos:
 	- networkmanager &#x2713;
 	- openssh &#x2713;
 	- bumblebee &#x2713;
+- Add systemwide mime-app definitions for: &#x2713;
+	- feh &#x2713;
+	- vim &#x2713;
 ___
 **You are here:**
-- Add systemwide mime-app definitions for:
-	- feh
-	- vim
-___
 - Add user configurables:
 	- dotfiles
 		- i3-gaps
@@ -56,11 +55,11 @@ ___
 		- .bashrc
 		- .vnc/xstartup
 		- .config/redshift
+___
 - Generate initramfs
 - Install bootloader (for now, grub)
 	- Maybe in the future, support adding an entry in existing bootloader.
 
-That covers the basic setup, and from then on, I will script all my ricing as well.
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 
 An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script. The script I have made is `ftphack`. It needs as a minimum the host machine's ip in `/etc/hosts` like so, for example:

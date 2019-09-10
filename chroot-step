@@ -19,6 +19,7 @@ aurpackageslistpath="/root/packages/$aurpackageslist"
 aurkeys="aur.keys"
 aurkeyspath="/root/packages/$aurkeys"
 configscriptspath="/root/configscripts/"
+applicationspath="/root/applications/"
 
 ###########################################################################
 # Set the timezone from info given in previous step 
@@ -383,3 +384,30 @@ if [ $proceed == "yes" ]; then
 	done	
 fi
 echo
+
+
+###########################################################################
+# Apply custom application defaults system-wide 
+###########################################################################
+
+# The applications will overwrite the applications already on the machine, but back up the ones replaced:
+echo "Applying custom application defaults..."
+applications=($(ls $applicationspath))
+for application in "${applications[@]}"; do
+	if [ -f /usr/share/applications/$application ]; then
+		# Check if the application default already matches the custom default:
+		diff $applicationspath/$application /usr/share/applications/$application >/dev/null 2>&1
+		retval=$?
+		if [ $retval -eq 0 ]; then
+			echo "The application default for $application is already identical to custom default!"
+		else
+			echo "Creating backup of old $application in /usr/share/applications/$application.bak..."
+			mv /usr/share/applications/$application /usr/share/applications/$application.bak
+			echo "Placing custom default for $application... in /usr/share/applications/$application..."
+			cp $applicationspath/$application /usr/share/applications/$application
+		fi
+	else
+		echo "Placing custom default for $application... in /usr/share/applications/$application..."
+		cp $applicationspath/$application /usr/share/applications/$application
+	fi
+done

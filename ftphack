@@ -42,6 +42,12 @@ else
 	echo "Making configscripts directory..."
 	mkdir "configscripts"
 fi
+if [ -d "applications" ]; then
+	echo "applications directory already exists!"
+else
+	echo "Making applications directory..."
+	mkdir "applications"
+fi
 
 archinstall="arch-install"
 archinstallpath="$archinstall"
@@ -66,6 +72,8 @@ chrootsteppath="$chrootstep"
 
 configscriptspath="configscripts"
 
+applicationspath="applications"
+
 # curl the new version over ftp:
 curl "ftp://$user:$password@$devpc/$devpath/$archinstallpath" > $archinstallpath
 curl "ftp://$user:$password@$devpc/$devpath/$ftphackpath" > $ftphackpath
@@ -80,6 +88,12 @@ configscripts=($(curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/
 for config in "${configscripts[@]}"; do
 	curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/$config" > $configscriptspath/$config
 	chmod 755 $configscriptspath/$config
+done
+
+# Applications might change, so they are found by curl'ing an index:
+applications=($(curl "ftp://$user:$password@$devpc/$devpath/$applicationspath/" 2>/dev/null | awk '{print $9}'))
+for application in "${applications[@]}"; do
+	curl "ftp://$user:$password@$devpc/$devpath/$applicationspath/$application" > $applicationspath/$application
 done
 
 # Ensure the new version is executable:

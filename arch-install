@@ -424,10 +424,12 @@ aurpackageslistpath="packages/$aurpackageslist"
 aurkeys="aur.keys"
 aurkeyspath="packages/$aurkeys"
 configscriptspath="configscripts"
+applicationspath="applications"
 
 mkdir /mnt/root/packages
 mkdir /mnt/root/info
 mkdir /mnt/root/configscripts
+mkdir /mnt/root/applications
 
 cp $ftphackpath /mnt/root/$ftphackpath
 cp $chrootsteppath /mnt/root/$chrootsteppath
@@ -439,10 +441,15 @@ fi
 cp $packageslistpath /mnt/root/$packageslistpath
 cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
 cp $aurkeyspath /mnt/root/$aurkeyspath
-configscripts=($(curl "ftp://$user:$password@$devpc/$devpath/$configscriptspath/" 2>/dev/null | awk '{print $9}'))
+configscripts=($(ls -w1 $configscriptspath))
 for config in "${configscripts[@]}"; do
 	cp $configscriptspath/$config /mnt/root/$configscriptspath/$config
 	chmod 755 /mnt/root/$configscriptspath/$config
+done
+applications=($(ls -w1 $applicationspath))
+for application in "${applications[@]}"; do
+	cp $applicationspath/$application /mnt/root/$applicationspath/$application
+	chmod 755 /mnt/root/$applicationspath/$application
 done
 chmod 755 /mnt/root/$ftphackpath
 chmod 755 /mnt/root/$chrootsteppath
