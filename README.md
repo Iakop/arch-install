@@ -46,16 +46,17 @@ List of todos:
 	- vim &#x2713;
 - Add user configurables: &#x2713;
 	- dotfiles &#x2713;
+- Add linuxscripts to installer &#x2713;
 ___
 **You are here:**
 - Generate initramfs
 - Install bootloader (for now, grub)
 ___
 
-- Add linuxscripts to installer
-- Add xorg configs of keyboard
-- Add systemwide retroarch config
+- Add system-wide xorg configs of keyboard
+- Add system-wide retroarch config
 	- And userwide config 
+- Add check for CPU, to select microcode packages
 
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 

@@ -416,6 +416,7 @@ echo
 ###########################################################################
 # Apply dotfiles to user 
 ###########################################################################
+# TODO: These installs can be merged into one for each in a list of repos!
 
 # The dotfiles repo is cloned to tmp:
 proceed="retry"
@@ -441,7 +442,42 @@ if [ $proceed == "yes" ]; then
 		echo "Installing git..."
 		pacman -S git
 	fi
-	echo "Building pikaur AUR helper as $username..."
+	echo "Installing dotfiles for $username..."
 	(cd /tmp; sudo -u $username git clone https://github.com/iakop/dotfiles; cd /tmp/dotfiles; sudo -u $username /tmp/dotfiles/install)
 fi
 echo
+
+###########################################################################
+# Install custom linux-scripts for user 
+###########################################################################
+# TODO: These installs can be merged into one for each in a list of repos!
+
+# The linux-scripts repo is cloned to tmp:
+proceed="retry"
+while [ $proceed == "retry" ]; do
+	echo -e "Would you like to install the iakop linux-scripts? [Y/n]:"
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+# Install linux-scripts
+if [ $proceed == "yes" ]; then
+	# Check for git on the machine, if not present, install it.
+	pacman -Qs git >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing git..."
+		pacman -S git
+	fi
+	echo "Installing linux-scripts for $username..."
+	(cd /tmp; sudo -u $username git clone https://github.com/iakop/linux-scripts; cd /tmp/linux-scripts; sudo -u $username /tmp/linux-scripts/install)
+fi
+echo
+
