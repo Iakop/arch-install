@@ -20,6 +20,10 @@ aurkeys="aur.keys"
 aurkeyspath="/root/packages/$aurkeys"
 configscriptspath="/root/configscripts/"
 applicationspath="/root/applications/"
+bootinfo="boot.info"
+bootinfopath="/root/info/$bootinfo"
+diskinfo="disk.info"
+diskinfopath="/root/info/$diskinfo"
 
 ###########################################################################
 # Set the timezone from info given in previous step 
@@ -481,3 +485,35 @@ if [ $proceed == "yes" ]; then
 fi
 echo
 
+###########################################################################
+# Generate initramfs 
+###########################################################################
+
+echo "Generating initramfs..."
+mkinitcpio -p linux
+
+
+###########################################################################
+# Install grub and config it 
+###########################################################################
+
+boottype=$(cat $bootinfopath)
+if [ $boottype == "bios" ]; then
+	echo "Installing grub for BIOS boot..."
+	
+	# Check for grub, it is needed.
+	# If it's not available, install it:
+	pacman -Qs grub >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing grub..."
+		pacman -S grub
+	fi
+
+	# Run grub-install on the current drive:
+	grub-install --target=i386-pc $(cat $diskinfopath)
+	grub-mkconfig -o /boot/grub/grub.cfg
+	echo "Done!"
+else
+	echo "EFI setup not implemented yet!"
+fi

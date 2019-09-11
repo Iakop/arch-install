@@ -113,12 +113,17 @@ echo "Checking boot type..."
 ls /sys/firmware/efi/efivars > /dev/null 2>&1
 efivarscheck=$?
 
+bootinfo="boot.info"
+bootinfopath="/tmp/$bootinfo"
+
 if [ $efivarscheck -eq 2 ] 
 then
 	echo "The system uses BIOS boot!"
+	echo "bios" > $bootinfopath
 elif [ $efivarscheck -eq 0 ]
 then
 	echo "The system uses UEFI boot!"
+	echo "efi" > $bootinfopath
 fi
 echo
 
@@ -178,6 +183,12 @@ while [ $validresponse -eq 1 ]; do
 	fi
 done
 echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"
+
+diskinfo="disk.info"
+diskinfopath="/tmp/$diskinfo"
+
+# Write the disk choice to diskinfo:
+echo /dev/${disksavail[$choicenumber]} > $diskinfopath
 echo
 
 ###########################################################################
@@ -435,6 +446,9 @@ cp $ftphackpath /mnt/root/$ftphackpath
 cp $chrootsteppath /mnt/root/$chrootsteppath
 cp $instructspath /mnt/root/info/$instructs
 cp $tzinfopath /mnt/root/info/$tzinfo
+cp $bootinfopath /mnt/root/info/$bootinfo
+cp $diskinfopath /mnt/root/info/$diskinfo
+
 if [ -f $graphicsinstallpath ]; then
 	cp $graphicsinstallpath /mnt/root/$graphicsinstallpath
 fi
@@ -465,3 +479,5 @@ swapoff /dev/${disksavail[$choicenumber]}2
 rm -f $tzinfopath
 rm -f $instructspath
 rm -f $graphicsinstallpath
+rm -f $bootinfopath
+rm -f $diskinfopath

@@ -47,10 +47,12 @@ List of todos:
 - Add user configurables: &#x2713;
 	- dotfiles &#x2713;
 - Add linuxscripts to installer &#x2713;
+- Generate initramfs &#x2713;
 ___
 **You are here:**
-- Generate initramfs
-- Install bootloader (for now, grub)
+- Install bootloader
+	- BIOS &#x2713;
+	- UEFI 
 ___
 
 - Add system-wide xorg configs of keyboard
