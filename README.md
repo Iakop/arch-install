@@ -53,12 +53,33 @@ ___
 - Install bootloader
 	- BIOS &#x2713;
 	- UEFI 
+- Add configscript for:
+	- xorg (keyboard)
+	- retroarch 
 ___
 
-- Add system-wide xorg configs of keyboard
-- Add system-wide retroarch config
-	- And userwide config 
 - Add check for CPU, to select microcode packages
+
+___
+*Nice to haves*
+- Change hostname setting to use hostnamectl
+- Implement choice of bootloader.
+	- Between GRUB and rEFInd, if available
+- Sort in installed packages, avoid using groups that bloat the system.
+	- Groups to sort:
+		- xorg
+		- xorg-apps
+	- (Maybe)
+		- base
+		- base-devel
+- Sort in installed AUR packages, in general avoid:
+	- Packages with poor architecture support.
+		- Fix the build of compton-tryone-git for i386 (and pentium 4)
+		- Maybe include packages pre-built
+	- Huge compile-times.
+		- purr-data
+		- citra-canary-git
+___
 
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 
