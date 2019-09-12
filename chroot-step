@@ -84,6 +84,9 @@ while [ $proceed == "no" ]; do
 	done
 done
 
+echo "Writing hostname to /etc/hostname..."
+echo "$hostname" > /etc/hostname
+
 echo "Writing hostname to /etc/hosts..."
 echo "# Static table lookup for hostnames." > /etc/hosts
 echo "# See hosts(5) for details." >> /etc/hosts
