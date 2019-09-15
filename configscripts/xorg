@@ -1,0 +1,54 @@
+#!/bin/bash
+
+pkgname="xorg"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check if the 00-keyboard.conf file exists:
+replace="yes"
+if [ -f /etc/X11/xorg.conf.d/00-keyboard.conf ]; then 
+	# Prompt the user wants to permanently replace it:
+	proceed="retry"
+	while [ $proceed == "retry" ]; do
+		echo -n "00-keyboard.conf already exists in /etc/X11/xorg.conf.d. Would you like to permanently replace it? [Y/n]: "
+		read response
+		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+			proceed="yes"
+		elif [ "${response,,}" == "n" ]; then
+			proceed="no"
+			replace="no"		
+		else
+			echo "I did not understand that, please try again!"
+			proceed="retry"
+		fi
+	done
+fi
+
+# If replace is set to yes, the file will be generated:
+if [ $replace == "yes" ]; then
+	echo "Applying new keyboard map..."
+	echo -e "Section \"InputClass\"" > /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo -e "\tIdentifier \"system-keyboard\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo -e "\tMatchIsKeyboard \"on\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo -e "\tOption \"XkbLayout\" \"dk\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo -e "EndSection" >> /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo "Done!"
+else
+	echo "The original config will not be replaced!"
+fi
+
+###############
+# End of config
+###############
+echo "Done!"

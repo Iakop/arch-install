@@ -54,7 +54,7 @@ ___
 	- BIOS &#x2713;
 	- UEFI 
 - Add configscript for:
-	- xorg (keyboard)
+	- xorg (keyboard) &#x2713;
 	- retroarch 
 ___
 
