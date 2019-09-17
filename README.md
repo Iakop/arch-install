@@ -41,6 +41,7 @@ List of todos:
 	- networkmanager &#x2713;
 	- openssh &#x2713;
 	- bumblebee &#x2713;
+	- xorg (keyboard) &#x2713;
 - Add systemwide mime-app definitions for: &#x2713;
 	- feh &#x2713;
 	- vim &#x2713;
@@ -53,9 +54,6 @@ ___
 - Install bootloader
 	- BIOS &#x2713;
 	- UEFI 
-- Add configscript for:
-	- xorg (keyboard) &#x2713;
-	- retroarch 
 ___
 
 - Add check for CPU, to select microcode packages
@@ -79,6 +77,7 @@ ___
 	- Huge compile-times.
 		- purr-data
 		- citra-canary-git
+- Configure retroarch correctly, and include the retroarch configuration in the configscripts.
 ___
 
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
