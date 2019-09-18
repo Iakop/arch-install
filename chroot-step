@@ -1,13 +1,9 @@
 #!/bin/bash
 
-devmode="on"
+# All the prerequisites (paths, etc.) are defined:
 devpc="devpc"
-testingmode="off"
-
-# To indicate that the chroot-step succeded:
-echo "Hello from $(pwd)!"
-echo
-
+envinfo="env.info"
+envinfopath="/root/info/$envinfo"
 tzinfo="tz.info"
 tzinfopath="/root/info/$tzinfo"
 ucodelist="ucode.list"
@@ -16,6 +12,8 @@ graphicsinstall="graphics.list"
 graphicsinstallpath="/root/packages/$graphicsinstall"
 packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
+heavypackageslist="heavy-packages.list"
+heavypackageslistpath="/root/packages/$heavypackageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="/root/packages/$aurpackageslist"
 aurkeys="aur.keys"
@@ -26,6 +24,29 @@ bootinfo="boot.info"
 bootinfopath="/root/info/$bootinfo"
 diskinfo="disk.info"
 diskinfopath="/root/info/$diskinfo"
+
+# Check for environment variables:
+cat $envinfopath | grep DEVMODE >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	devmode="$(env | grep DEVMODE | awk -F '=' '{print $2}'))"
+	echo "DEV MODE IS ON"
+else
+	devmode="off"
+fi
+
+cat $envinfopath | grep TESTINGMODE >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	testingmode="$(env | grep DEVMODE | awk -F '=' '{print $2}'))"
+	echo "TESTING MODE IS ON"
+else
+	testingmode="off"
+fi
+
+# To indicate that the chroot-step succeded:
+echo "Hello from $(pwd)!"
+echo
 
 ###########################################################################
 # Set the timezone from info given in previous step 
@@ -160,6 +181,7 @@ while [ $proceed == "retry" ]; do
 done
 
 if [ $proceed == "yes" ]; then
+
 	# Install sublime key:
 	curl -O https://download.sublimetext.com/sublimehq-pub.gpg && pacman-key --add sublimehq-pub.gpg && pacman-key --lsign-key 8A8F901A && rm sublimehq-pub.gpg
 
@@ -173,6 +195,11 @@ if [ $proceed == "yes" ]; then
 		linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
 		sed -i "${linetoedit}i\ \n[sublime-text]\nServer = https://download.sublimetext.com/arch/dev/x86_64" /etc/pacman.conf
 	fi
+
+	installsublime="yes"
+
+else
+	installsublime="no"
 fi
 echo
 
@@ -195,10 +222,46 @@ while [ $proceed == "retry" ]; do
 		proceed="retry"
 	fi
 done
-
 if [ $proceed == "yes" ]; then
+	installpackages="yes"
+else
+	installpackages="no"
+fi
+
+proceed="retry"
+# Would you like to install the packages?
+while [ $proceed == "retry" ]; do
+	echo -n "Would you like to install the packages specified in $heavypackageslistpath? [Y/n]: "
+	read response
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+if [ $proceed == "yes" ]; then
+	installheavypackages="yes"
+else
+	installheavypackages="no"
+fi
+
+if [ $installpackages == "yes" ] || [ $installheavypackages == "yes" ]; then
+	
+	# Create blank toinstall.list:
+	echo "" > /tmp/toinstall.list
+
 	# Create the full pacman install list:
-	cat "$packageslistpath" > /tmp/toinstall.list
+	if [ $installpackages == "yes" ]; then
+		cat "$packageslistpath" >> /tmp/toinstall.list
+	fi
+
+	# Add heavy installs list:
+	if [ $installheavypackages == "yes" ]; then
+		cat "$heavypackageslistpath" >> /tmp/toinstall.list
+	fi
 
 	# Check if any microcode updates are needed:
 	if [ -f $ucodelistpath ]; then
@@ -208,6 +271,11 @@ if [ $proceed == "yes" ]; then
 	# Check if any graphics drivers are needed:
 	if [ -f $graphicsinstallpath ]; then
 		cat "$graphicsinstallpath" >> /tmp/toinstall.list
+	fi
+
+	# Check if sublime is needed:
+	if [ $installsublime == "yes" ]; then
+		echo "sublime-text" >> /tmp/toinstall.list
 	fi
 
 	# Time to install the programs!

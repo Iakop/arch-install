@@ -53,23 +53,19 @@ List of todos:
 	- BIOS &#x2713;
 	- UEFI &#x2713;
 - Add check for CPU, to select microcode packages &#x2713;
+- Implement check for different versions of Nvidia drivers &#x2713;
+	- If the card is old, install nouveau instead! &#x2713;
+- Sort in installed AUR packages &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Implement check for different versions of Nvidia drivers
-	- If the card is old, install nouveau instead!
+- Fix issues with VirtualBox 3D acceleration of the VM installs.
+- Refactor the steps to use common definitions.
 ___
 
 ___
 *Nice to haves*
-- Sort in installed AUR packages, in general avoid:
-	- Packages with poor architecture support.
-		- Fix the build of compton-tryone-git for i386 (and pentium 4)
-		- Maybe include packages pre-built
-	- Huge compile-times.
-		- purr-data
-		- citra-canary-git
 - Change hostname setting to use hostnamectl
 - Implement choice of bootloader.
 	- Between GRUB and rEFInd, if available

@@ -1,7 +1,30 @@
 #!/bin/bash
 
-devmode="on"
-testingmode="off"
+envinfo="env.info"
+envinfopath="/tmp/$envinfo"
+
+# Check for environment variables:
+env | grep DEVMODE >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	devmode="$(env | grep DEVMODE | awk -F '=' '{print $2}')"
+	echo "DEV MODE IS $devmode"
+else
+	devmode="off"
+fi
+
+env | grep TESTINGMODE >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	testingmode="$(env | grep DEVMODE | awk -F '=' '{print $2}')"
+	echo "TESTING MODE IS $testingmode"
+else
+	testingmode="off"
+fi
+
+echo "" > $envinfopath
+echo "DEVMODE=$testingmode" >> envinfopath
+echo "TESTINGMODE=$testingmode" >> envinfopath
 
 ###########################################################################
 # Connect to the internet
@@ -48,7 +71,9 @@ fi
 tzinfo="tz.info"
 tzinfopath="/tmp/$tzinfo"
 tzexit=1
+
 while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
+
 	# Prompt for user specified timezone info:
 	echo "Please input the timezone (format: Region/City): "
 	read tzresponse
@@ -60,10 +85,12 @@ while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	echo "Checking for timezone info..."
 	ls /usr/share/zoneinfo/$tzresponse >/dev/null 2>&1
 	timezonecheck=$?
+
 	# If the timezone exists, then link it:
 	if [ $timezonecheck -eq 0 ] && [ "$tzresponse" != "" ]; then
 		echo "Timezone found!"
 		tzexit=0
+
 	# Else ask if the user wants to try again:
 	else
 		echo "Timezone info not found, would you like to try again? [Y/n]: "
@@ -213,7 +240,7 @@ while [ $validresponse -eq 1 ]; do
 	read response
 
 	if [ $testingmode == "on" ]; then
-	response="0"
+		response="0"
 	fi
 	
 	# Check if response is a number, and the number index exists within the options:
@@ -267,29 +294,61 @@ fi
 declare -a graphicsdrivers
 
 # Check for different corporations, to provide the drivers:
+echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-9][0-9][0-9][0-9][^0-9]" > /dev/null 2>&1
+geforce1000plus=$?
+
+echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[6-9][0-9][0-9][^0-9]" > /dev/null 2>&1
+geforce600to900=$?
+
+echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[4-5][0-9][0-9][^0-9]" > /dev/null 2>&1
+geforce400to500=$?
+
+echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-3][0-9][0-9][^0-9]" > /dev/null 2>&1
+geforce100to300=$?
+
 echo -e "$vgacontrollers" | grep -e NVIDIA > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+nvidiacheck=$?
+
+# The newer Nvidia drivers will blacklist nouveau, so only one can prevail:
+if [ $geforce1000plus -eq 0 ] || [ $geforce600to900 -eq 0 ]; then
 	graphicsdrivers+=("nvidia" "nvidia-utils" "lib32-nvidia-utils")
+elif [ $geforce400to500 -eq 0 ]; then
+	graphicsdrivers+=("nvidia-390xx" "nvidia-390xx-utils" "lib32-nvidia-390xx-utils")
+elif [ $geforce100to300 -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-nouveau")
+fi
+
+# If every other nvidia-check fails, install nouveau as fallback:
+if [ $nvidiacheck -eq 0 ] && [ $geforce100to300 -ne 0 ] && [ $geforce1000plus -ne 0 ] && [ $geforce600to900 -ne 0 ] && [ $geforce400to500 -ne 0 ]; then
+	oldnvidia=0
+	graphicsdrivers+=("xf86-video-nouveau")
 fi
 
 echo -e "$vgacontrollers" | grep -e Intel > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-	graphicsdrivers+=("xf86-video-intel")
+intelcheck=$?
+if [ $intelcheck -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-intel" "vulkan-intel")
 fi
 
 echo -e "$vgacontrollers" | grep -e AMD > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-	graphicsdrivers+=("xf86-video-amdgpu")
+amdcheck=$?
+if [ $amdcheck -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-amdgpu" "vulkan-radeon")
 fi
 
 echo -e "$vgacontrollers" | grep -e ATI > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+aticheck=$?
+if [ $aticheck -eq 0 ]; then
 	graphicsdrivers+=("xf86-video-ati")
 fi
 
-echo -e "$vgacontrollers" | grep -e ATI -e AMD -e Intel > /dev/null 2>&1
-if [ $? -eq 0 ]; then
+# Check for common drivers to be installed:
+if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $oldnvidia -eq 0 ]; then
 	graphicsdrivers+=("mesa" "lib32-mesa")
+fi
+# Check for common vulkan-icd-loader to be installed:
+if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $nvidiacheck -eq 0 ]; then
+	graphicsdrivers+=("vulkan-icd-loader" "lib32-vulkan-icd-loader")
 fi
 
 # For now, it is assumed that a virtual machine doesn't require any other drivers for graphics:
@@ -318,8 +377,9 @@ if [ $? -eq 0 ]; then
 	else
 		echo "I did not understand that, please try again!"
 	fi
+
 	if [ $bumblebeesupport == "yes" ]; then
-		graphicsdrivers+=("bumblebee" "lib32-virtualgl")
+		graphicsdrivers+=("bumblebee" "lib32-virtualgl" "primus_vk")
 	fi
 fi
 
@@ -479,6 +539,8 @@ chrootstep="chroot-step"
 chrootsteppath="$chrootstep"
 packageslist="packages.list"
 packageslistpath="packages/$packageslist"
+heavypackageslist="heavy-packages.list"
+heavypackageslistpath="packages/$heavypackageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 aurkeys="aur.keys"
@@ -494,6 +556,7 @@ mkdir /mnt/root/applications
 cp $ftphackpath /mnt/root/$ftphackpath
 cp $chrootsteppath /mnt/root/$chrootsteppath
 cp $instructspath /mnt/root/info/$instructs
+cp $envinfopath /mnt/root/info/$envinfo
 cp $tzinfopath /mnt/root/info/$tzinfo
 cp $bootinfopath /mnt/root/info/$bootinfo
 cp $diskinfopath /mnt/root/info/$diskinfo
@@ -506,6 +569,7 @@ if [ -f $graphicsinstallpath ]; then
 fi
 
 cp $packageslistpath /mnt/root/$packageslistpath
+cp $heavypackageslistpath /mnt/root/$heavypackageslistpath
 cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
 cp $aurkeyspath /mnt/root/$aurkeyspath
 configscripts=($(ls -w1 $configscriptspath))
