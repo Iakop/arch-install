@@ -10,6 +10,8 @@ echo
 
 tzinfo="tz.info"
 tzinfopath="/root/info/$tzinfo"
+ucodelist="ucode.list"
+ucodelistpath="/root/packages/$ucodelist"
 graphicsinstall="graphics.list"
 graphicsinstallpath="/root/packages/$graphicsinstall"
 packageslist="packages.list"
@@ -196,11 +198,18 @@ done
 
 if [ $proceed == "yes" ]; then
 	# Create the full pacman install list:
-	if [ -f $graphicsinstallpath ]; then
-		cat "$graphicsinstallpath" "$packageslistpath" > /tmp/toinstall.list
-	else
-		cat "$packageslistpath" > /tmp/toinstall.list
+	cat "$packageslistpath" > /tmp/toinstall.list
+
+	# Check if any microcode updates are needed:
+	if [ -f $ucodelistpath ]; then
+		cat "$ucodelistpath" >> /tmp/toinstall.list
 	fi
+
+	# Check if any graphics drivers are needed:
+	if [ -f $graphicsinstallpath ]; then
+		cat "$graphicsinstallpath" >> /tmp/toinstall.list
+	fi
+
 	# Time to install the programs!
 	echo "Installing packages from pacman repos:"
 	pacman -S --needed - < /tmp/toinstall.list
@@ -495,7 +504,6 @@ echo
 echo "Generating initramfs..."
 mkinitcpio -p linux
 
-
 ###########################################################################
 # Install grub and config it 
 ###########################################################################
@@ -517,6 +525,33 @@ if [ $boottype == "bios" ]; then
 	grub-install --target=i386-pc $(cat $diskinfopath)
 	grub-mkconfig -o /boot/grub/grub.cfg
 	echo "Done!"
+elif [ $boottype == "uefi" ]; then
+	efipartition="/efi"
+	echo "Installing grub for UEFI boot..."
+	
+	# Check for grub, it is needed.
+	# If it's not available, install it:
+	pacman -Qs grub >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing grub..."
+		pacman -S grub
+	fi
+	# Similarly, check for efibootmgr:
+	pacman -Qs efibootmgr >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Installing grub..."
+		pacman -S efibootmgr
+	fi
+	
+	# grub-install runs with --removable option. This "just works".
+	# Unsure whether there is a better way of doing this.
+	# Run grub install on the uefi partition:
+	grub-install --target=x86_64-efi --efi-directory=$efipartition --bootloader-id=GRUB --removable
+	grub-mkconfig -o /boot/grub/grub.cfg
+	echo "Done!"
 else
-	echo "EFI setup not implemented yet!"
+	echo "Boot type not supported! ...Yet."
+	echo "Bootloader must be installed manually!"
 fi

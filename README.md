@@ -49,17 +49,27 @@ List of todos:
 	- dotfiles &#x2713;
 - Add linuxscripts to installer &#x2713;
 - Generate initramfs &#x2713;
+- Install bootloader &#x2713;
+	- BIOS &#x2713;
+	- UEFI &#x2713;
+- Add check for CPU, to select microcode packages &#x2713;
+
+**CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Install bootloader
-	- BIOS &#x2713;
-	- UEFI 
+- Implement check for different versions of Nvidia drivers
+	- If the card is old, install nouveau instead!
 ___
-
-- Add check for CPU, to select microcode packages
 
 ___
 *Nice to haves*
+- Sort in installed AUR packages, in general avoid:
+	- Packages with poor architecture support.
+		- Fix the build of compton-tryone-git for i386 (and pentium 4)
+		- Maybe include packages pre-built
+	- Huge compile-times.
+		- purr-data
+		- citra-canary-git
 - Change hostname setting to use hostnamectl
 - Implement choice of bootloader.
 	- Between GRUB and rEFInd, if available
@@ -70,13 +80,6 @@ ___
 	- (Maybe)
 		- base
 		- base-devel
-- Sort in installed AUR packages, in general avoid:
-	- Packages with poor architecture support.
-		- Fix the build of compton-tryone-git for i386 (and pentium 4)
-		- Maybe include packages pre-built
-	- Huge compile-times.
-		- purr-data
-		- citra-canary-git
 - Configure retroarch correctly, and include the retroarch configuration in the configscripts.
 ___
 

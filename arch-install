@@ -123,7 +123,53 @@ then
 elif [ $efivarscheck -eq 0 ]
 then
 	echo "The system uses UEFI boot!"
-	echo "efi" > $bootinfopath
+	echo "uefi" > $bootinfopath
+fi
+echo
+
+###########################################################################
+# Detect hardware: CPU
+###########################################################################
+
+# Detect the manufacturer of the CPU, to install microcode.
+echo "Detecting CPU manufacturer..."
+
+cpunames="$(cat /proc/cpuinfo | grep "model name" | awk -F ': ' '{print "\t" $2}')"
+echo "CPU(s) found:"
+echo -e "$cpunames"
+
+# Declare an array for needed microcode:
+declare -a vendorucode
+
+echo "$cpuname" | grep -e Intel >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	vendorucode+=("intel-ucode")
+fi
+
+echo "$cpuname" | grep -e AMD >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	vendorucode+=("amd-ucode")
+fi
+
+# Add microcode packages to list:
+ucodelist="ucode.list"
+ucodelistpath="/tmp/$ucodelist"
+
+# Empty file, if used before and interrupted:
+echo "" > $ucodelistpath
+
+if [ "${vendorucode[0]}" != "" ]; then
+	echo "The following microcode update packages will be installed:"
+	for ucode in "${!vendorucode[@]}"
+	do
+		echo -e "${vendorucode[$ucode]}" >> $ucodelistpath
+	done
+	# output the results nicely:
+	sed 's/^/\t/' $ucodelistpath
+else
+	echo "No microcode updates to install!"
 fi
 echo
 
@@ -280,6 +326,9 @@ fi
 # Installing following graphics drivers:
 graphicsinstall="graphics.list"
 graphicsinstallpath="/tmp/$graphicsinstall"
+
+# Empty file, if used before and interrupted:
+echo "" > $graphicsinstallpath
 
 if [ "${graphicsdrivers[0]}" != "" ]; then
 	echo "The following graphics drivers will be installed:"
@@ -449,9 +498,13 @@ cp $tzinfopath /mnt/root/info/$tzinfo
 cp $bootinfopath /mnt/root/info/$bootinfo
 cp $diskinfopath /mnt/root/info/$diskinfo
 
-if [ -f $graphicsinstallpath ]; then
-	cp $graphicsinstallpath /mnt/root/$graphicsinstallpath
+if [ -f $ucodelistpath ]; then
+	cp $ucodelistpath /mnt/root/packages/$ucodelist
 fi
+if [ -f $graphicsinstallpath ]; then
+	cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
+fi
+
 cp $packageslistpath /mnt/root/$packageslistpath
 cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
 cp $aurkeyspath /mnt/root/$aurkeyspath
