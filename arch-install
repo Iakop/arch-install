@@ -1,7 +1,45 @@
 #!/bin/bash
 
+###########################################################################
+# Check the environment
+###########################################################################
+
 envinfo="env.info"
 envinfopath="/tmp/$envinfo"
+
+# Check for virtualization:
+hypervisor=$(dmesg | grep "Hypervisor detected") 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	virtualization="$(echo "$hypervisor" | awk -F ': ' '{print $2}')"
+	virtualization=${virtualization,,}
+	echo "VIRTUALIZATION IS $virtualization"
+else
+	virtualization="none"
+fi
+
+# Check for virtualization:
+vmcompany=$(dmesg | grep "DMI") 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+
+	echo "$vmcompany" | grep -i "virtualbox" >/dev/null 2>&1
+	virtualboxcheck=$?
+	echo "$vmcompany" | grep -i "vmware" >/dev/null 2>&1
+	vmwarecheck=$?
+
+	if [ $virtualboxcheck -eq 0 ]; then
+		vmtype="virtualbox"
+		echo "VMTYPE IS $vmtype"
+	elif [ $vmwarecheck -eq 0 ]; then
+		vmtype="vmware"
+		echo "VMTYPE IS $vmtype"
+	else
+		vmtype="none"
+	fi
+else
+	echo "Error in detecting VMTYPE!"
+fi
 
 # Check for environment variables:
 env | grep DEVMODE >/dev/null 2>&1
@@ -23,7 +61,9 @@ else
 fi
 
 echo "" > $envinfopath
-echo "DEVMODE=$testingmode" >> envinfopath
+echo "VMTYPE=$vmtype" >> envinfopath
+echo "VIRTUALIZATION=$virtualization" >> envinfopath
+echo "DEVMODE=$devmode" >> envinfopath
 echo "TESTINGMODE=$testingmode" >> envinfopath
 
 ###########################################################################
@@ -541,6 +581,10 @@ packageslist="packages.list"
 packageslistpath="packages/$packageslist"
 heavypackageslist="heavy-packages.list"
 heavypackageslistpath="packages/$heavypackageslist"
+hostpackageslist="host-packages.list"
+hostpackageslistpath="packages/$hostpackageslist"
+guestpackageslist="guest-packages.list"
+guestpackageslistpath="packages/$guestpackageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 aurkeys="aur.keys"
@@ -570,6 +614,8 @@ fi
 
 cp $packageslistpath /mnt/root/$packageslistpath
 cp $heavypackageslistpath /mnt/root/$heavypackageslistpath
+cp $hostpackageslistpath /mnt/root/$hostpackageslistpath
+cp $guestpackageslistpath /mnt/root/$guestpackageslistpath
 cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
 cp $aurkeyspath /mnt/root/$aurkeyspath
 configscripts=($(ls -w1 $configscriptspath))

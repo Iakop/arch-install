@@ -64,6 +64,12 @@ packageslistpath="packages/$packageslist"
 heavypackageslist="heavy-packages.list"
 heavypackageslistpath="packages/$heavypackageslist"
 
+hostpackageslist="host-packages.list"
+hostpackageslistpath="packages/$hostpackageslist"
+
+guestpackageslist="guest-packages.list"
+guestpackageslistpath="packages/$guestpackageslist"
+
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="packages/$aurpackageslist"
 
@@ -83,6 +89,8 @@ curl "ftp://$user:$password@$devpc/$devpath/$ftphackpath" > $ftphackpath
 curl "ftp://$user:$password@$devpc/$devpath/$testpcipath" > $testpcipath
 curl "ftp://$user:$password@$devpc/$devpath/$packageslistpath" > $packageslistpath
 curl "ftp://$user:$password@$devpc/$devpath/$heavypackageslistpath" > $heavypackageslistpath
+curl "ftp://$user:$password@$devpc/$devpath/$hostpackageslistpath" > $hostpackageslistpath
+curl "ftp://$user:$password@$devpc/$devpath/$guestpackageslistpath" > $guestpackageslistpath
 curl "ftp://$user:$password@$devpc/$devpath/$aurpackageslistpath" > $aurpackageslistpath 
 curl "ftp://$user:$password@$devpc/$devpath/$chrootsteppath" > $chrootsteppath
 curl "ftp://$user:$password@$devpc/$devpath/$aurkeyspath" > $aurkeyspath

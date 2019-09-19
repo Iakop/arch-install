@@ -14,6 +14,10 @@ packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
 heavypackageslist="heavy-packages.list"
 heavypackageslistpath="/root/packages/$heavypackageslist"
+hostpackageslist="host-packages.list"
+hostpackageslistpath="/root/packages/$hostpackageslist"
+guestpackageslist="guest-packages.list"
+guestpackageslistpath="/root/packages/$guestpackageslist"
 aurpackageslist="aur-packages.list"
 aurpackageslistpath="/root/packages/$aurpackageslist"
 aurkeys="aur.keys"
@@ -26,11 +30,29 @@ diskinfo="disk.info"
 diskinfopath="/root/info/$diskinfo"
 
 # Check for environment variables:
+cat $envinfopath | grep VMTYPE >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	vmtype="$(env | grep VMTYPE | awk -F '=' '{print $2}'))"
+	echo "VMTYPE IS $vmtype"
+else
+	vmtype="off"
+fi
+
+cat $envinfopath | grep VIRTUALIZATION >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	virtualization="$(env | grep VIRTUALIZATION | awk -F '=' '{print $2}'))"
+	echo "VIRTUALIZATION IS $virtualization"
+else
+	virtualization="off"
+fi
+
 cat $envinfopath | grep DEVMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
 	devmode="$(env | grep DEVMODE | awk -F '=' '{print $2}'))"
-	echo "DEV MODE IS ON"
+	echo "DEV MODE IS $devmode"
 else
 	devmode="off"
 fi
@@ -38,8 +60,8 @@ fi
 cat $envinfopath | grep TESTINGMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	testingmode="$(env | grep DEVMODE | awk -F '=' '{print $2}'))"
-	echo "TESTING MODE IS ON"
+	testingmode="$(env | grep TESTINGMODE | awk -F '=' '{print $2}'))"
+	echo "TESTING MODE IS $testingmode"
 else
 	testingmode="off"
 fi
@@ -273,9 +295,16 @@ if [ $installpackages == "yes" ] || [ $installheavypackages == "yes" ]; then
 		cat "$graphicsinstallpath" >> /tmp/toinstall.list
 	fi
 
+	# Add virtualization lists:
+	if [ $virtualization != "none" ] && [ $vmtype != "none" ]; then
+		cat "$guestpackageslistpath" >> /tmp/toinstall.list
+	else
+		cat "$hostpackageslistpath" >> /tmp/toinstall.list
+	fi
+
 	# Check if sublime is needed:
 	if [ $installsublime == "yes" ]; then
-		echo "sublime-text" >> /tmp/toinstall.list
+		echo -e "\nsublime-text" >> /tmp/toinstall.list
 	fi
 
 	# Time to install the programs!
