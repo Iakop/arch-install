@@ -382,19 +382,19 @@ if [ $aticheck -eq 0 ]; then
 	graphicsdrivers+=("xf86-video-ati")
 fi
 
+echo -e "$vgacontrollers" | grep -e VMware > /dev/null 2>&1
+vmwaresvgacheck=$?
+if [ $vmwaresvgacheck -eq 0 ]; then
+	graphicsdrivers+=("xf86-video-vmware")
+fi
+
 # Check for common drivers to be installed:
-if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $oldnvidia -eq 0 ]; then
+if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $oldnvidia -eq 0 ] || [ $vmwaresvgacheck -eq 0 ]; then
 	graphicsdrivers+=("mesa" "lib32-mesa")
 fi
 # Check for common vulkan-icd-loader to be installed:
-if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $nvidiacheck -eq 0 ]; then
+if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $nvidiacheck -eq 0 ] || [ $vmwaresvgacheck -eq 0 ]; then
 	graphicsdrivers+=("vulkan-icd-loader" "lib32-vulkan-icd-loader")
-fi
-
-# For now, it is assumed that a virtual machine doesn't require any other drivers for graphics:
-echo -e "$vgacontrollers" | grep -e VMware > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-	graphicsdrivers+=("")
 fi
 
 # Check for nvidia prime compatible 3d controllers:
@@ -579,14 +579,6 @@ chrootstep="chroot-step"
 chrootsteppath="$chrootstep"
 packageslist="packages.list"
 packageslistpath="packages/$packageslist"
-heavypackageslist="heavy-packages.list"
-heavypackageslistpath="packages/$heavypackageslist"
-hostpackageslist="host-packages.list"
-hostpackageslistpath="packages/$hostpackageslist"
-guestpackageslist="guest-packages.list"
-guestpackageslistpath="packages/$guestpackageslist"
-aurpackageslist="aur-packages.list"
-aurpackageslistpath="packages/$aurpackageslist"
 aurkeys="aur.keys"
 aurkeyspath="packages/$aurkeys"
 configscriptspath="configscripts"
@@ -599,7 +591,6 @@ mkdir /mnt/root/applications
 
 cp $ftphackpath /mnt/root/$ftphackpath
 cp $chrootsteppath /mnt/root/$chrootsteppath
-cp $instructspath /mnt/root/info/$instructs
 cp $envinfopath /mnt/root/info/$envinfo
 cp $tzinfopath /mnt/root/info/$tzinfo
 cp $bootinfopath /mnt/root/info/$bootinfo
@@ -613,10 +604,6 @@ if [ -f $graphicsinstallpath ]; then
 fi
 
 cp $packageslistpath /mnt/root/$packageslistpath
-cp $heavypackageslistpath /mnt/root/$heavypackageslistpath
-cp $hostpackageslistpath /mnt/root/$hostpackageslistpath
-cp $guestpackageslistpath /mnt/root/$guestpackageslistpath
-cp $aurpackageslistpath /mnt/root/$aurpackageslistpath
 cp $aurkeyspath /mnt/root/$aurkeyspath
 configscripts=($(ls -w1 $configscriptspath))
 for config in "${configscripts[@]}"; do
@@ -644,3 +631,4 @@ rm -f $instructspath
 rm -f $graphicsinstallpath
 rm -f $bootinfopath
 rm -f $diskinfopath
+rm -f $envinfopath

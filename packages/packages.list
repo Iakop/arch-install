@@ -1,52 +1,79 @@
+## BEGIN #######################
+
+## System ######################
 base
 base-devel
+mate-polkit
+!plymouth
+!plymouth-theme-arch-breeze-git
+
+## Remote-access ###############
+openssh
+tigervnc
+
+## Networking ##################
 networkmanager
-network-manager-applet
 dhclient
-grub
-git
-htop
-neofetch
-acpi
-cbatticon
+avahi
+nss-mdns
 iptables
 ufw
 gufw
-mate-polkit
-openssh
-tigervnc
-avahi
-nss-mdns
+
+## Hardware-drivers ############
+acpi
 bluez
 bluez-utils
-blueman
-xorg
-xorg-xinit
-i3-gaps
-i3status
-i3blocks
-dmenu
-clipmenu
-dunst
-arandr
-lxappearance
-redshift
-python-gobject
-qt5-styleplugins
+
+## Terminal ####################
 rxvt-unicode
 urxvt-perls
 bash-completion
 neofetch
 w3m
 vim
+htop
+neofetch
+
+## Systray #####################
+redshift
+python-gobject
+blueman
+network-manager-applet
+cbatticon
+!caffeine-ng
+
+## Fun #########################
 cmatrix
 lolcat
+
+## Fonts #######################
 noto-fonts
 noto-fonts-extra
 awesome-terminal-fonts
 ttf-liberation
 ttf-dejavu
 wqy-zenhei
+!ttf-monaco
+!ttf-montserrat
+!otf-san-francisco
+
+## Windowmanager ###############
+xorg
+xorg-xinit
+i3-gaps
+!compton-tryone-git
+!i3lock-fancy-git
+i3status
+i3blocks
+dmenu
+clipmenu
+dunst
+arandr
+maim
+xclip
+
+## Files #######################
 thunar
 tumbler
 ffmpegthumbnailer
@@ -61,15 +88,19 @@ nextcloud-client
 firefox
 flashplugin
 thunderbird
+
+## Torrenting ##################
 tor
+!tor-browser
 transmission-gtk
-maim
-xclip
+
+## Pictures ####################
 feh
 imagemagick
-ghostscript
 gimp
 krita
+
+## Audio #######################
 pulseaudio
 pulseaudio-alsa
 pavucontrol
@@ -77,21 +108,74 @@ pasystray
 playerctl
 pamixer
 alsa-utils
+!spotify
+!ffmpeg-compat-57
+zenity
+
+## Video #######################
 ffmpeg
 handbrake
-vlc
+mpv
 youtube-dl
 kodi
+!flashplayer-standalone
+
+## Ricing ######################
+python-pywal
+lxappearance
+qt5-styleplugins
+
+## Icons #######################
+!la-capitaine-icon-theme
+
+## Themes ######################
+arc-gtk-theme
+
+## Programming #################
+linux-headers
+git
 python
 python-pip
-python-pywal
 arduino
 arduino-avr-core
+
+## Documents ###################
 poppler
 zathura
 zathura-pdf-poppler
-cura
+ghostscript
+
+## Games #######################
+lutris
 steam
 retroarch
 retroarch-assets-xmb
 libretro
+
+## VirtualBox-Host #############
+virtualbox
+virtualbox-host-modules-arch
+virtualbox-ext-oracle
+
+## VirtualBox-Guest ############
+virtualbox-guest-modules-arch
+virtualbox-guest-utils
+
+## LaTeX #######################
+texlive-most
+texlive-lang
+biber
+texmaker
+
+## Making ######################
+cura
+kicad
+kicad-library
+kicad-library-3d
+!digilent.waveforms
+
+## Messaging ###################
+discord
+caprine
+
+## END #########################

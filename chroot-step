@@ -12,14 +12,6 @@ graphicsinstall="graphics.list"
 graphicsinstallpath="/root/packages/$graphicsinstall"
 packageslist="packages.list"
 packageslistpath="/root/packages/$packageslist"
-heavypackageslist="heavy-packages.list"
-heavypackageslistpath="/root/packages/$heavypackageslist"
-hostpackageslist="host-packages.list"
-hostpackageslistpath="/root/packages/$hostpackageslist"
-guestpackageslist="guest-packages.list"
-guestpackageslistpath="/root/packages/$guestpackageslist"
-aurpackageslist="aur-packages.list"
-aurpackageslistpath="/root/packages/$aurpackageslist"
 aurkeys="aur.keys"
 aurkeyspath="/root/packages/$aurkeys"
 configscriptspath="/root/configscripts/"
@@ -33,7 +25,7 @@ diskinfopath="/root/info/$diskinfo"
 cat $envinfopath | grep VMTYPE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	vmtype="$(env | grep VMTYPE | awk -F '=' '{print $2}'))"
+	vmtype="$(cat $envinfopath | grep VMTYPE | awk -F '=' '{print $2}')"
 	echo "VMTYPE IS $vmtype"
 else
 	vmtype="off"
@@ -42,7 +34,7 @@ fi
 cat $envinfopath | grep VIRTUALIZATION >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	virtualization="$(env | grep VIRTUALIZATION | awk -F '=' '{print $2}'))"
+	virtualization="$(cat $envinfopath | grep VIRTUALIZATION | awk -F '=' '{print $2}')"
 	echo "VIRTUALIZATION IS $virtualization"
 else
 	virtualization="off"
@@ -51,7 +43,7 @@ fi
 cat $envinfopath | grep DEVMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	devmode="$(env | grep DEVMODE | awk -F '=' '{print $2}'))"
+	devmode="$(cat $envinfopath | grep DEVMODE | awk -F '=' '{print $2}')"
 	echo "DEV MODE IS $devmode"
 else
 	devmode="off"
@@ -60,7 +52,7 @@ fi
 cat $envinfopath | grep TESTINGMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	testingmode="$(env | grep TESTINGMODE | awk -F '=' '{print $2}'))"
+	testingmode="$(cat $envinfopath | grep TESTINGMODE | awk -F '=' '{print $2}')"
 	echo "TESTING MODE IS $testingmode"
 else
 	testingmode="off"
@@ -230,86 +222,83 @@ echo "Updating the pacman repos..."
 pacman -Syu
 echo
 
-proceed="retry"
-# Would you like to install the packages?
-while [ $proceed == "retry" ]; do
-	echo -n "Would you like to install the packages specified in $packageslistpath? [Y/n]: "
-	read response
-	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
-		proceed="yes"
-	elif [ "${response,,}" == "n" ]; then
-		proceed="no"		
-	else
-		echo "I did not understand that, please try again!"
-		proceed="retry"
-	fi
-done
-if [ $proceed == "yes" ]; then
-	installpackages="yes"
-else
-	installpackages="no"
-fi
+# Create blank toinstall.list:
+echo "" > /tmp/toinstall.list
+echo "" > /tmp/toinstallaur.list
 
-proceed="retry"
-# Would you like to install the packages?
-while [ $proceed == "retry" ]; do
-	echo -n "Would you like to install the packages specified in $heavypackageslistpath? [Y/n]: "
-	read response
-	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
-		proceed="yes"
-	elif [ "${response,,}" == "n" ]; then
-		proceed="no"		
-	else
-		echo "I did not understand that, please try again!"
-		proceed="retry"
-	fi
-done
-if [ $proceed == "yes" ]; then
-	installheavypackages="yes"
-else
-	installheavypackages="no"
-fi
+echo "Parsing packages in $packageslistpath..."
+packagecategories=$(cat $packageslistpath | grep -n "^## .*#")
+categorylines=($(echo "$packagecategories" | awk -F ":" '{print $1}'))
+categorynames=($(echo "$packagecategories" | tr -d "#" | awk -F ": " '{print $2}' | tr -d " "))
 
-if [ $installpackages == "yes" ] || [ $installheavypackages == "yes" ]; then
+# Check whether the category is wanted, or if is BEGIN or END category:
+for i in "${!categorynames[@]}"; do
+	if [ "${categorynames[$i]}" == "BEGIN" ] || [ "${categorynames[$i]}" == "END" ]; then
+		continue
 	
-	# Create blank toinstall.list:
-	echo "" > /tmp/toinstall.list
+	elif [ "${categorynames[$i]}" == "VirtualBox-Host" ] && [ $vmtype != "virtualbox" ]; then
+		continue
 
-	# Create the full pacman install list:
-	if [ $installpackages == "yes" ]; then
-		cat "$packageslistpath" >> /tmp/toinstall.list
-	fi
+	elif [ "${categorynames[$i]}" == "VirtualBox-Guest" ] && [ $vmtype != "none" ]; then
+		continue
 
-	# Add heavy installs list:
-	if [ $installheavypackages == "yes" ]; then
-		cat "$heavypackageslistpath" >> /tmp/toinstall.list
-	fi
-
-	# Check if any microcode updates are needed:
-	if [ -f $ucodelistpath ]; then
-		cat "$ucodelistpath" >> /tmp/toinstall.list
-	fi
-
-	# Check if any graphics drivers are needed:
-	if [ -f $graphicsinstallpath ]; then
-		cat "$graphicsinstallpath" >> /tmp/toinstall.list
-	fi
-
-	# Add virtualization lists:
-	if [ $virtualization != "none" ] && [ $vmtype != "none" ]; then
-		cat "$guestpackageslistpath" >> /tmp/toinstall.list
 	else
-		cat "$hostpackageslistpath" >> /tmp/toinstall.list
+		# Add the packages listed to their appropriate lists:
+		startline=$(echo "${categorylines[$i]}" | awk '{print $1 + 1}')
+		endline=$(echo "${categorylines[$i+1]}" | awk '{print $1 - 1}')
+		pkgs=$(sed -n "${startline},${endline}p" $packageslistpath)
+		regpkgs=$(echo "$pkgs" | grep "^[^\!]" | tr ' ' '\n')
+		aurpkgs=$(echo "$pkgs" | grep "^!" | tr ' ' '\n' | sed 's/^\!//')
+		proceed="retry"
+		# Output the list:
+		echo "Following packages are in ${categorynames[$i]}:"
+		echo
+		echo "Pacman:"
+		echo "$regpkgs" | sed 's/^/\t/'
+		echo "AUR:"
+		echo "$aurpkgs" | sed 's/^/\t/'
+		# Would you like to install the packages?
+		while [ $proceed == "retry" ]; do
+			echo -n "Would you like to install the packages? [Y/n]: "
+			read response
+			if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+				proceed="yes"
+			elif [ "${response,,}" == "n" ]; then
+				proceed="no"		
+			else
+				echo "I did not understand that, please try again!"
+				proceed="retry"
+			fi
+		done
+		if [ $proceed == "yes" ]; then
+			# Keeps track if any packages should be installed at all:
+			installpackages="yes"
+			echo "$regpkgs" >> /tmp/toinstall.list
+			echo "$aurpkgs" >> /tmp/toinstallaur.list
+		fi
 	fi
+done
 
-	# Check if sublime is needed:
-	if [ $installsublime == "yes" ]; then
-		echo -e "\nsublime-text" >> /tmp/toinstall.list
-	fi
+# Several checks are performed for NEEDED packages:
+# Check if any microcode updates are needed:
+if [ -f $ucodelistpath ]; then
+	cat "$ucodelistpath" >> /tmp/toinstall.list
+fi
+# Check if any graphics drivers are needed:
+if [ -f $graphicsinstallpath ]; then
+	cat "$graphicsinstallpath" >> /tmp/toinstall.list
+fi
+# Check if sublime is needed:
+if [ $installsublime == "yes" ]; then
+	installpackages="yes"
+	echo -e "\nsublime-text" >> /tmp/toinstall.list
+fi
 
+# If any packages at all are needed:
+if [ $installpackages == "yes" ]; then
 	# Time to install the programs!
 	echo "Installing packages from pacman repos:"
-	pacman -S --needed - < /tmp/toinstall.list
+	pacman -S --needed --noconfirm - < /tmp/toinstall.list
 fi
 echo
 
@@ -403,7 +392,7 @@ echo
 
 proceed="retry"
 while [ $proceed == "retry" ]; do
-	echo -e "Would you like to install the AUR helper pikaur? [Y/n]:"
+	echo -e "Would you like to install the AUR helper pikaur, and AUR packages? [Y/n]:"
 	read response
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
@@ -422,28 +411,11 @@ if [ $proceed == "yes" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing git..."
-		pacman -S git
+		pacman -S git --noconfirm
 	fi
 	echo "Building pikaur AUR helper as $username..."
-	(cd /tmp; sudo -u $username git clone https://aur.archlinux.org/pikaur.git; cd /tmp/pikaur; sudo -u $username makepkg -fsri)
-fi
-
-proceed="retry"
-while [ $proceed == "retry" ]; do
-	echo -e "Would you like to install AUR packages listed in $aurpackageslistpath? [Y/n]:"
-	read response
-	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
-		proceed="yes"
-	elif [ "${response,,}" == "n" ]; then
-		proceed="no"		
-	else
-		echo "I did not understand that, please try again!"
-		proceed="retry"
-	fi
-done
-
-# Install aur packages:
-if [ $proceed == "yes" ]; then
+	(cd /tmp; sudo -u $username git clone https://aur.archlinux.org/pikaur.git; cd /tmp/pikaur; sudo -u $username makepkg -fsri --noconfirm)
+	# Install aur packages:
 	# First, search for keys. THe responsibility of providing key info lies within the package folder.
 	# The keys needed for a certain AUR package is the first field, and the second is the key itself.
 	
@@ -451,7 +423,7 @@ if [ $proceed == "yes" ]; then
 	keys=($(tr ' ' ',' < $aurkeyspath))
 	for key in "${keys[@]}"; do
 		package=$(echo "$key" | awk -F ',' '{print $1}')
-		grep $package $aurpackageslistpath >/dev/null 2>&1
+		grep $package /tmp/toinstallaur.list >/dev/null 2>&1
 		retval=$?
 
 		if [ $retval -eq 0 ]; then
@@ -465,7 +437,7 @@ if [ $proceed == "yes" ]; then
 
 	# Switch to user, and get the packages with pikaur:
 	# WARNING, this will take time to build.
-	sudo -u $username pikaur -S --needed $(tr '\n' ' ' < $aurpackageslistpath)
+	sudo -u $username pikaur -S --needed --noconfirm $(tr '\n' ' ' < /tmp/toinstallaur.list)
 fi
 echo
 
@@ -500,7 +472,7 @@ echo
 
 
 ###########################################################################
-# Apply custom application defaults system-wide 
+# Apply custom MIME application defaults system-wide 
 ###########################################################################
 
 # The applications will overwrite the applications already on the machine, but back up the ones replaced:
@@ -553,7 +525,7 @@ if [ $proceed == "yes" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing git..."
-		pacman -S git
+		pacman -S --noconfirm git
 	fi
 	echo "Installing dotfiles for $username..."
 	(cd /tmp; sudo -u $username git clone https://github.com/iakop/dotfiles; cd /tmp/dotfiles; sudo -u $username /tmp/dotfiles/install)
@@ -587,7 +559,7 @@ if [ $proceed == "yes" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing git..."
-		pacman -S git
+		pacman -S --noconfirm git
 	fi
 	echo "Installing linux-scripts for $username..."
 	(cd /tmp; sudo -u $username git clone https://github.com/iakop/linux-scripts; cd /tmp/linux-scripts; sudo -u $username /tmp/linux-scripts/install)
@@ -615,7 +587,7 @@ if [ $boottype == "bios" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing grub..."
-		pacman -S grub
+		pacman -S --noconfirm grub
 	fi
 
 	# Run grub-install on the current drive:
@@ -632,14 +604,14 @@ elif [ $boottype == "uefi" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing grub..."
-		pacman -S grub
+		pacman -S --noconfirm grub
 	fi
 	# Similarly, check for efibootmgr:
 	pacman -Qs efibootmgr >/dev/null 2>&1
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Installing grub..."
-		pacman -S efibootmgr
+		pacman -S --noconfirm efibootmgr
 	fi
 	
 	# grub-install runs with --removable option. This "just works".
