@@ -60,13 +60,12 @@ List of todos:
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Fix issues with VirtualBox 3D acceleration of the VM installs.
 - Refactor the steps to use common definitions.
 ___
+- Remove ftphack from project. Using scp to installing machine from now on.
 
 ___
 *Nice to haves*
-- Change hostname setting to use hostnamectl
 - Implement choice of bootloader.
 	- Between GRUB and rEFInd, if available
 - Sort in installed packages, avoid using groups that bloat the system.

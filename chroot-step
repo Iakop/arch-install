@@ -236,10 +236,12 @@ for i in "${!categorynames[@]}"; do
 	if [ "${categorynames[$i]}" == "BEGIN" ] || [ "${categorynames[$i]}" == "END" ]; then
 		continue
 	
-	elif [ "${categorynames[$i]}" == "VirtualBox-Host" ] && [ $vmtype != "virtualbox" ]; then
+	elif [ "${categorynames[$i]}" == "VirtualBox-Host" ] && [ "$vmtype" == "virtualbox" ]; then
+		echo "The machine is VirtualBox guest, skipping host packages..."
 		continue
 
-	elif [ "${categorynames[$i]}" == "VirtualBox-Guest" ] && [ $vmtype != "none" ]; then
+	elif [ "${categorynames[$i]}" == "VirtualBox-Guest" ] && [ "$vmtype" == "none" ]; then
+		echo "The machine is real, skipping VirtualBox guest packages..."
 		continue
 
 	else

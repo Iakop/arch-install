@@ -61,10 +61,10 @@ else
 fi
 
 echo "" > $envinfopath
-echo "VMTYPE=$vmtype" >> envinfopath
-echo "VIRTUALIZATION=$virtualization" >> envinfopath
-echo "DEVMODE=$devmode" >> envinfopath
-echo "TESTINGMODE=$testingmode" >> envinfopath
+echo "VMTYPE=$vmtype" >> $envinfopath
+echo "VIRTUALIZATION=$virtualization" >> $envinfopath
+echo "DEVMODE=$devmode" >> $envinfopath
+echo "TESTINGMODE=$testingmode" >> $envinfopath
 
 ###########################################################################
 # Connect to the internet

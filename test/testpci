@@ -1,3 +1,4 @@
+00:02.0 "VGA compatible controller" "VMware" "SVGA II Adapter" "VMware" "SVGA II Adapter"
 00:02.0 "VGA compatible controller" "Intel Corporation" "Haswell-ULT Integrated Graphics Controller" -r0b "Lenovo" "Haswell-ULT Integrated Graphics Controller"
 00:02.0 "VGA compatible controller" "NVIDIA Corporation" "GM108M [GeForce 1060ti]" -rff -pff "" ""
 00:02.0 "VGA compatible controller" "NVIDIA Corporation" "GM108M [GeForce 840M]" -rff -pff "" ""
