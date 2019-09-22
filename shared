@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Development mode variables:
+devusername="iakop"
+devhostname="archdev"
+
+# Installer script paths:
+archinstall="arch-install"
+archinstallpath="$prefix/$archinstall"
+chrootstep="chroot-step"
+chrootsteppath="$prefix/$chrootstep"
+
+# Ftphack:
+ftphack="ftphack"
+ftphackpath="$prefix/$ftphack"
+
+# Test files:
+testpci="testpci"
+testpcipath="test/$testpci"
+
+# Info doesn't exist before the installer runs: 
+if [ ! -d "$prefix/info" ]; then
+	mkdir "$prefix/info"
+fi
+# Environment and settings info:
+envinfo="env.info"
+envinfopath="$prefix/info/$envinfo"
+tzinfo="tz.info"
+tzinfopath="$prefix/info/$tzinfo"
+bootinfo="boot.info"
+bootinfopath="$prefix/info/$bootinfo"
+diskinfo="disk.info"
+diskinfopath="$prefix/info/$diskinfo"
+
+# Package lists:
+packageslist="packages.list"
+packageslistpath="$prefix/packages/$packageslist"
+ucodelist="ucode.list"
+ucodelistpath="$prefix/packages/$ucodelist"
+graphicsinstall="graphics.list"
+graphicsinstallpath="$prefix/packages/$graphicsinstall"
+
+# Keys for keychain:
+aurkeys="aur.keys"
+aurkeyspath="$prefix/keys/$aurkeys"
+
+# Misc. configurations:
+configscriptspath="$prefix/configscripts/"
+applicationspath="$prefix/applications/"
