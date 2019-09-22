@@ -85,6 +85,8 @@ xarchiver
 ntfs-3g
 nfs-utils
 nextcloud-client
+
+## Web #########################
 firefox
 flashplugin
 thunderbird
@@ -127,6 +129,7 @@ qt5-styleplugins
 
 ## Icons #######################
 !la-capitaine-icon-theme
+arc-icon-theme
 
 ## Themes ######################
 arc-gtk-theme
@@ -155,7 +158,7 @@ libretro
 ## VirtualBox-Host #############
 virtualbox
 virtualbox-host-modules-arch
-virtualbox-ext-oracle
+!virtualbox-ext-oracle
 
 ## VirtualBox-Guest ############
 virtualbox-guest-modules-arch

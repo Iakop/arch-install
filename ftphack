@@ -1,8 +1,7 @@
 #!/bin/bash
 
-user="iakop"
-devpc="devpc"
-devpath="MyGitRepos/arch-install"
+prefix="$(pwd)"
+source "$prefix/shared"
 
 proceed="no"
 while [ $proceed != "yes" ]; do
@@ -48,28 +47,6 @@ else
 	echo "Making applications directory..."
 	mkdir "applications"
 fi
-
-archinstall="arch-install"
-archinstallpath="$archinstall"
-
-ftphack="ftphack"
-ftphackpath="$ftphack"
-
-testpci="testpci"
-testpcipath="test/$testpci"
-
-packageslist="packages.list"
-packageslistpath="packages/$packageslist"
-
-aurkeys="aur.keys"
-aurkeyspath="packages/$aurkeys"
-
-chrootstep="chroot-step"
-chrootsteppath="$chrootstep"
-
-configscriptspath="configscripts"
-
-applicationspath="applications"
 
 # curl the new version over ftp:
 curl "ftp://$user:$password@$devpc/$devpath/$archinstallpath" > $archinstallpath

@@ -4,8 +4,10 @@
 # Check the environment
 ###########################################################################
 
-envinfo="env.info"
-envinfopath="/tmp/$envinfo"
+# All the prerequisites (paths, etc.) are defined:
+
+prefix="$(pwd)"
+source "$prefix/shared"
 
 # Check for virtualization:
 hypervisor=$(dmesg | grep "Hypervisor detected") 2>&1
@@ -54,7 +56,7 @@ fi
 env | grep TESTINGMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
-	testingmode="$(env | grep DEVMODE | awk -F '=' '{print $2}')"
+	testingmode="$(env | grep TESTINGMODE | awk -F '=' '{print $2}')"
 	echo "TESTING MODE IS $testingmode"
 else
 	testingmode="off"
@@ -107,11 +109,7 @@ else
 	echo "I did not understand that, please try again!"
 fi
 
-# Only when properly running:
-tzinfo="tz.info"
-tzinfopath="/tmp/$tzinfo"
 tzexit=1
-
 while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 
 	# Prompt for user specified timezone info:
@@ -119,7 +117,7 @@ while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	read tzresponse
 
 	if [ $testingmode == "on" ]; then
-	tzresponse="Europe/Copenhagen"
+		tzresponse="Europe/Copenhagen"
 	fi
 
 	echo "Checking for timezone info..."
@@ -180,9 +178,6 @@ echo "Checking boot type..."
 ls /sys/firmware/efi/efivars > /dev/null 2>&1
 efivarscheck=$?
 
-bootinfo="boot.info"
-bootinfopath="/tmp/$bootinfo"
-
 if [ $efivarscheck -eq 2 ] 
 then
 	echo "The system uses BIOS boot!"
@@ -219,10 +214,6 @@ retval=$?
 if [ $retval -eq 0 ]; then
 	vendorucode+=("amd-ucode")
 fi
-
-# Add microcode packages to list:
-ucodelist="ucode.list"
-ucodelistpath="/tmp/$ucodelist"
 
 # Empty file, if used before and interrupted:
 echo "" > $ucodelistpath
@@ -296,9 +287,6 @@ while [ $validresponse -eq 1 ]; do
 	fi
 done
 echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"
-
-diskinfo="disk.info"
-diskinfopath="/tmp/$diskinfo"
 
 # Write the disk choice to diskinfo:
 echo /dev/${disksavail[$choicenumber]} > $diskinfopath
@@ -422,10 +410,6 @@ if [ $? -eq 0 ]; then
 		graphicsdrivers+=("bumblebee" "lib32-virtualgl" "primus_vk")
 	fi
 fi
-
-# Installing following graphics drivers:
-graphicsinstall="graphics.list"
-graphicsinstallpath="/tmp/$graphicsinstall"
 
 # Empty file, if used before and interrupted:
 echo "" > $graphicsinstallpath
@@ -573,52 +557,12 @@ genfstab -U /mnt >> /mnt/etc/fstab
 # Arch-chroot and install packages from list
 ###########################################################################
 
-ftphack="ftphack"
-ftphackpath="$ftphack"
-chrootstep="chroot-step"
-chrootsteppath="$chrootstep"
-packageslist="packages.list"
-packageslistpath="packages/$packageslist"
-aurkeys="aur.keys"
-aurkeyspath="packages/$aurkeys"
-configscriptspath="configscripts"
-applicationspath="applications"
+# Copy all the files created to the mounted drive:
+cp -r "$prefix"/* /mnt/root/
 
-mkdir /mnt/root/packages
-mkdir /mnt/root/info
-mkdir /mnt/root/configscripts
-mkdir /mnt/root/applications
-
-cp $ftphackpath /mnt/root/$ftphackpath
-cp $chrootsteppath /mnt/root/$chrootsteppath
-cp $envinfopath /mnt/root/info/$envinfo
-cp $tzinfopath /mnt/root/info/$tzinfo
-cp $bootinfopath /mnt/root/info/$bootinfo
-cp $diskinfopath /mnt/root/info/$diskinfo
-
-if [ -f $ucodelistpath ]; then
-	cp $ucodelistpath /mnt/root/packages/$ucodelist
-fi
-if [ -f $graphicsinstallpath ]; then
-	cp $graphicsinstallpath /mnt/root/packages/$graphicsinstall
-fi
-
-cp $packageslistpath /mnt/root/$packageslistpath
-cp $aurkeyspath /mnt/root/$aurkeyspath
-configscripts=($(ls -w1 $configscriptspath))
-for config in "${configscripts[@]}"; do
-	cp $configscriptspath/$config /mnt/root/$configscriptspath/$config
-	chmod 755 /mnt/root/$configscriptspath/$config
-done
-applications=($(ls -w1 $applicationspath))
-for application in "${applications[@]}"; do
-	cp $applicationspath/$application /mnt/root/$applicationspath/$application
-	chmod 755 /mnt/root/$applicationspath/$application
-done
-chmod 755 /mnt/root/$ftphackpath
-chmod 755 /mnt/root/$chrootsteppath
+# Arch-chroot into it:
 echo "Arch-chrooting into disk..."
-arch-chroot /mnt /root/$chrootsteppath
+arch-chroot /mnt /root/$chrootstep
 echo "Done!"
 
 ###########################################################################
@@ -626,9 +570,3 @@ echo "Done!"
 ###########################################################################
 umount -R /mnt
 swapoff /dev/${disksavail[$choicenumber]}2
-rm -f $tzinfopath
-rm -f $instructspath
-rm -f $graphicsinstallpath
-rm -f $bootinfopath
-rm -f $diskinfopath
-rm -f $envinfopath

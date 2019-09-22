@@ -1,25 +1,12 @@
 #!/bin/bash
 
+###########################################################################
+# Check the environment
+###########################################################################
+
 # All the prerequisites (paths, etc.) are defined:
-devpc="devpc"
-envinfo="env.info"
-envinfopath="/root/info/$envinfo"
-tzinfo="tz.info"
-tzinfopath="/root/info/$tzinfo"
-ucodelist="ucode.list"
-ucodelistpath="/root/packages/$ucodelist"
-graphicsinstall="graphics.list"
-graphicsinstallpath="/root/packages/$graphicsinstall"
-packageslist="packages.list"
-packageslistpath="/root/packages/$packageslist"
-aurkeys="aur.keys"
-aurkeyspath="/root/packages/$aurkeys"
-configscriptspath="/root/configscripts/"
-applicationspath="/root/applications/"
-bootinfo="boot.info"
-bootinfopath="/root/info/$bootinfo"
-diskinfo="disk.info"
-diskinfopath="/root/info/$diskinfo"
+prefix="/root"
+source "$prefix/shared"
 
 # Check for environment variables:
 cat $envinfopath | grep VMTYPE >/dev/null 2>&1
@@ -106,10 +93,20 @@ echo
 proceed="no"
 while [ $proceed == "no" ]; do
 	read -p "Please enter the name of the computer: " hostname
+	
+	if [ $testingmode == "on" ]; then
+		hostname="$devhostname"
+	fi
+
 	proceed="retry"
 	while [ $proceed == "retry" ]; do
 		echo -e "Is the name \"$hostname\" okay? [Y/n]:"
 		read response
+
+		if [ $testingmode == "on" ]; then
+			response="y"
+		fi
+
 		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 			proceed="yes"
 		elif [ "${response,,}" == "n" ]; then
@@ -121,6 +118,7 @@ while [ $proceed == "no" ]; do
 	done
 done
 
+# Configure the hostname:
 echo "Writing hostname to /etc/hostname..."
 echo "$hostname" > /etc/hostname
 
@@ -130,18 +128,7 @@ echo "# See hosts(5) for details." >> /etc/hosts
 echo -e "127.0.0.1\tlocalhost" >> /etc/hosts
 echo -e "::1\t\tlocalhost" >> /etc/hosts
 echo -e "127.0.1.1\t$hostname.localdomain\t$hostname" >> /etc/hosts
-if [ $devmode == "on" ]; then
-	devips=("192.168.0.17" "192.168.0.18" "172.20.10.2" "172.20.10.3")
-	for ip in "${!devips[@]}"; do
-		echo "Checking for development pc on IP: ${devips[$ip]}"
-		ping -c1 ${devips[$ip]} -W1 > /dev/null 2>&1
-		connectioncheck=$?
-		if [ $connectioncheck -eq 0 ]; then
-			echo "Found connection on ${devips[$ip]}!"
-			echo -e "${devips[$ip]}\t$devpc" >> /etc/hosts
-		fi
-	done
-fi
+
 echo "Done!"
 echo
 
@@ -184,6 +171,11 @@ proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to add the sublime-text repo to /etc/pacman.conf? [Y/n]:"
 	read response
+
+	if [ $testingmode == "on" ]; then
+		response="y"
+	fi
+
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
 	elif [ "${response,,}" == "n" ]; then
@@ -207,7 +199,7 @@ if [ $proceed == "yes" ]; then
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
-		sed -i "${linetoedit}i\ \n[sublime-text]\nServer = https://download.sublimetext.com/arch/dev/x86_64" /etc/pacman.conf
+		sed -i "${linetoedit}i\ \n[sublime-text]\nServer = https://download.sublimetext.com/arch/stable/x86_64" /etc/pacman.conf
 	fi
 
 	installsublime="yes"
@@ -263,6 +255,20 @@ for i in "${!categorynames[@]}"; do
 		while [ $proceed == "retry" ]; do
 			echo -n "Would you like to install the packages? [Y/n]: "
 			read response
+
+			if [ $testingmode == "on" ]; then
+				if [ ${categorynames[$i]} == "System" ] || [ ${categorynames[$i]} == "Remote-access" ]\
+				 || [ ${categorynames[$i]} == "Networking" ] || [ ${categorynames[$i]} == "Hardware-drivers" ]\
+				 || [ ${categorynames[$i]} == "Terminal" ] || [ ${categorynames[$i]} == "Systray" ]\
+				 || [ ${categorynames[$i]} == "Fonts" ] || [ ${categorynames[$i]} == "Windowmanager" ]\
+				 || [ ${categorynames[$i]} == "Audio" ] || [ ${categorynames[$i]} == "Ricing" ]\
+				 || [ ${categorynames[$i]} == "VirtualBox-Host" ] || [ ${categorynames[$i]} == "VirtualBox-Guest" ]; then
+					response="y"
+				else
+					response="n"
+				fi
+			fi
+
 			if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 				proceed="yes"
 			elif [ "${response,,}" == "n" ]; then
@@ -312,10 +318,20 @@ proceed="no"
 while [ $proceed == "no" ]; do
 	echo -n "Add the first user. Please enter the username: "
 	read username
+
+	if [ $testingmode == "on" ]; then
+		username="$devusername"
+	fi
+
 	proceed="retry"
 	while [ $proceed == "retry" ]; do
 		echo -e "Is the name \"$username\" okay? [Y/n]:"
 		read response
+
+		if [ $testingmode == "on" ]; then
+			response="y"
+		fi
+
 		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 			proceed="yes"
 		elif [ "${response,,}" == "n" ]; then
@@ -354,8 +370,14 @@ useradd -m -U -G $groups$extragroups -s /bin/bash $username
 echo "Setting password for $username..."
 retval=10
 while [ $retval -ne 0 ]; do
-	passwd $username
-	retval=$?
+	if [ $testingmode == "on" ]; then
+		echo "TESTINGMODE, password is: hunter2"
+		yes hunter2 | passwd $username
+		retval=$?
+	else
+		passwd $username
+		retval=$?
+	fi
 done
 echo
 
@@ -367,7 +389,7 @@ if [ $sudoretval -eq 0 ]; then
 	grep "%wheel ALL=(ALL) ALL" /etc/sudoers >/dev/null 2>&1
 	retval=$?
 	if [ $retval -eq 0 ]; then
-		linetoedit=$(grep -n "%wheel ALL=(ALL) ALL" /etc/sudoers | awk -F ':' '{print $1}')
+		linetoedit=$(grep -n "%wheel ALL=(ALL) NOPASSWD: ALL" /etc/sudoers | awk -F ':' '{print $1}')
 		sed "${linetoedit}s/^# //" /etc/sudoers > /tmp/sudoers
 		cp /tmp/sudoers /etc/sudoers
 	else
@@ -383,8 +405,14 @@ fi
 echo "Please enter password for root..."
 retval=10
 while [ $retval -ne 0 ]; do
-	passwd
-	retval=$?
+	if [ $testingmode == "on" ]; then
+		echo "TESTINGMODE, password is: hunter2"
+		yes hunter2 | passwd
+		retval=$?
+	else
+		passwd
+		retval=$?
+	fi
 done
 echo
 
@@ -396,6 +424,11 @@ proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the AUR helper pikaur, and AUR packages? [Y/n]:"
 	read response
+	
+	if [ $testingmode == "on" ]; then
+		response="y"
+	fi
+
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
 	elif [ "${response,,}" == "n" ]; then
@@ -441,6 +474,22 @@ if [ $proceed == "yes" ]; then
 	# WARNING, this will take time to build.
 	sudo -u $username pikaur -S --needed --noconfirm $(tr '\n' ' ' < /tmp/toinstallaur.list)
 fi
+
+# Give normal wheel/sudo permissions, requiring passwords back:
+grep "%wheel ALL=(ALL) ALL" /etc/sudoers >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	linetoedit=$(grep -n "%wheel ALL=(ALL) NOPASSWD: ALL" /etc/sudoers | awk -F ':' '{print $1}')
+	sed "${linetoedit}s/^/# /" /etc/sudoers > /tmp/sudoers
+	linetoedit=$(grep -n "%wheel ALL=(ALL) ALL" /etc/sudoers | awk -F ':' '{print $1}')
+	sed "${linetoedit}s/^# //" /tmp/sudoers > /etc/sudoers
+else
+	echo "Manual visudo needed to give normal wheel rights..."
+	# For ensuring the user reads the reasoning, sleep 2:
+	sleep 2
+	visudo
+fi
+
 echo
 
 ###########################################################################
@@ -451,6 +500,11 @@ proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to run the configuration scripts in $configscriptspath? [Y/n]:"
 	read response
+
+	if [ $testingmode == "on" ]; then
+		response="y"
+	fi
+
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
 	elif [ "${response,,}" == "n" ]; then
@@ -510,6 +564,11 @@ proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the iakop dotfiles? [Y/n]:"
 	read response
+
+	if [ $testingmode == "on" ]; then
+		response="y"
+	fi
+
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
 	elif [ "${response,,}" == "n" ]; then
@@ -544,6 +603,11 @@ proceed="retry"
 while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the iakop linux-scripts? [Y/n]:"
 	read response
+
+	if [ $testingmode == "on" ]; then
+		response="y"
+	fi
+
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 		proceed="yes"
 	elif [ "${response,,}" == "n" ]; then
