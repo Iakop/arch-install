@@ -56,16 +56,22 @@ List of todos:
 - Implement check for different versions of Nvidia drivers &#x2713;
 	- If the card is old, install nouveau instead! &#x2713;
 - Sort in installed AUR packages &#x2713;
+- Refactor the steps to use common definitions. &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Refactor the steps to use common definitions.
-___
 - Remove ftphack from project. Using scp to installing machine from now on.
+___
 
 ___
 *Nice to haves*
+- Git configscript for the newly added user:
+	```bash
+	git config --global user.email "you@example.com"
+  	git config --global user.name "Your Name"
+	```
+- Other configscripts that could be useful.
 - Implement choice of bootloader.
 	- Between GRUB and rEFInd, if available
 - Sort in installed packages, avoid using groups that bloat the system.
