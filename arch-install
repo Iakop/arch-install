@@ -323,19 +323,54 @@ declare -a graphicsdrivers
 
 # Check for different corporations, to provide the drivers:
 echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-9][0-9][0-9][0-9][^0-9]" > /dev/null 2>&1
-geforce1000plus=$?
+vgacheck=$?
+echo -e "$dddontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-9][0-9][0-9][0-9][^0-9]" > /dev/null 2>&1
+dddcheck=$?
+if [ $vgacheck -eq 0 ] || [ $dddcheck -eq 0 ];then
+	geforce1000plus=0
+else
+	geforce1000plus=1
+fi
 
 echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[6-9][0-9][0-9][^0-9]" > /dev/null 2>&1
-geforce600to900=$?
+vgacheck=$?
+echo -e "$dddcontrollers" | grep -e NVIDIA | grep -i "GeForce.*[6-9][0-9][0-9][^0-9]" > /dev/null 2>&1
+dddcheck=$?
+if [ $vgacheck -eq 0 ] || [ $dddcheck -eq 0 ];then
+	geforce600to900=0
+else
+	geforce600to900=1
+fi
 
 echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[4-5][0-9][0-9][^0-9]" > /dev/null 2>&1
-geforce400to500=$?
+vgacheck=$?
+echo -e "$dddcontrollers" | grep -e NVIDIA | grep -i "GeForce.*[4-5][0-9][0-9][^0-9]" > /dev/null 2>&1
+dddcheck=$?
+if [ $vgacheck -eq 0 ] || [ $dddcheck -eq 0 ];then
+	geforce400to500=0
+else
+	geforce400to500=1
+fi
 
 echo -e "$vgacontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-3][0-9][0-9][^0-9]" > /dev/null 2>&1
-geforce100to300=$?
+vgacheck=$?
+echo -e "$dddcontrollers" | grep -e NVIDIA | grep -i "GeForce.*[1-3][0-9][0-9][^0-9]" > /dev/null 2>&1
+dddcheck=$?
+if [ $vgacheck -eq 0 ] || [ $dddcheck -eq 0 ];then
+	geforce100to300=0
+else
+	geforce100to300=1
+fi
 
 echo -e "$vgacontrollers" | grep -e NVIDIA > /dev/null 2>&1
-nvidiacheck=$?
+vgacheck=$?
+echo -e "$vgacontrollers" | grep -e NVIDIA > /dev/null 2>&1
+dddcheck=$?
+if [ $vgacheck -eq 0 ] || [ $dddcheck -eq 0 ];then
+	nvidiacheck=0
+else
+	nvidiacheck=1
+fi
 
 # The newer Nvidia drivers will blacklist nouveau, so only one can prevail:
 if [ $geforce1000plus -eq 0 ] || [ $geforce600to900 -eq 0 ]; then

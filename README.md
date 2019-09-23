@@ -57,15 +57,16 @@ List of todos:
 	- If the card is old, install nouveau instead! &#x2713;
 - Sort in installed AUR packages &#x2713;
 - Refactor the steps to use common definitions. &#x2713;
+- Find out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad. &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
+- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it.
 - Remove ftphack from project. Using scp to installing machine from now on.
 ___
 *Needed*
-- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it.
-- FInd out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad.
+
 ___
 *Nice to haves*
 - Git configscript for the newly added user:
