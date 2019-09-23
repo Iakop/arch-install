@@ -48,25 +48,15 @@ env | grep DEVMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
 	devmode="$(env | grep DEVMODE | awk -F '=' '{print $2}')"
-	echo "DEV MODE IS $devmode"
+	echo "DEVMODE IS $devmode"
 else
 	devmode="off"
-fi
-
-env | grep TESTINGMODE >/dev/null 2>&1
-retval=$?
-if [ $retval -eq 0 ]; then
-	testingmode="$(env | grep TESTINGMODE | awk -F '=' '{print $2}')"
-	echo "TESTING MODE IS $testingmode"
-else
-	testingmode="off"
 fi
 
 echo "" > $envinfopath
 echo "VMTYPE=$vmtype" >> $envinfopath
 echo "VIRTUALIZATION=$virtualization" >> $envinfopath
 echo "DEVMODE=$devmode" >> $envinfopath
-echo "TESTINGMODE=$testingmode" >> $envinfopath
 
 ###########################################################################
 # Connect to the internet
@@ -96,7 +86,7 @@ echo "Would you like to set the clock to a custom timezone? [Y/n]: "
 # Check for input:
 read response
 
-if [ $testingmode == "on" ]; then
+if [ $devmode == "on" ]; then
 response="y"
 fi
 
@@ -116,7 +106,7 @@ while [ $tzexit -eq 1 ] && [ $timezoneselect == "custom" ]; do
 	echo "Please input the timezone (format: Region/City): "
 	read tzresponse
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		tzresponse="Europe/Copenhagen"
 	fi
 
@@ -270,7 +260,7 @@ validresponse=1
 while [ $validresponse -eq 1 ]; do
 	read response
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="0"
 	fi
 	
@@ -298,7 +288,7 @@ echo
 
 echo "Checking for graphics hardware..."
 # To get the graphics, two categories are searched using lspci:
-if [ $testingmode == "on" ]; then 
+if [ $devmode == "on" ]; then 
 	vgacontrollers=$(cat test/testpci | grep VGA | awk -F '"' '{print "\t" $6 " by " $4}')
 	dddcontrollers=$(cat test/testpci | grep 3D | awk -F '"' '{print "\t" $6 " by " $4}')
 else
@@ -427,7 +417,7 @@ if [ $? -eq 0 ]; then
 	echo "Seems like NVidia PRIME might be available. Would you like to install bumblebee support? [Y/n]:"
 	read response
 	
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 	response="y"
 	fi
 	
@@ -502,7 +492,7 @@ cat $instructspath
 echo "Do you want to proceed or abort? [Y/n]:"
 read response
 
-if [ $testingmode == "on" ]; then
+if [ $devmode == "on" ]; then
 response="y"
 fi
 
@@ -517,7 +507,7 @@ fi
 # Act upon response:
 if [ $proceed == "yes" ]; then
 	echo "Formatting disk!"
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 	sfdisk -f /dev/${disksavail[$choicenumber]} < $instructspath
 	else
 	sfdisk /dev/${disksavail[$choicenumber]} < $instructspath
@@ -548,14 +538,14 @@ then
 fi
 
 echo "Creating swap on /dev/${disksavail[$choicenumber]}2..."
-if [ $testingmode == "on" ]; then
+if [ $devmode == "on" ]; then
 mkswap -f /dev/${disksavail[$choicenumber]}2
 else
 mkswap /dev/${disksavail[$choicenumber]}2
 fi
 
 echo "Creating ext4 filesystem on /dev/${disksavail[$choicenumber]}3..."
-if [ $testingmode == "on" ]; then
+if [ $devmode == "on" ]; then
 mkfs.ext4 -F /dev/${disksavail[$choicenumber]}3
 else
 mkfs.ext4 /dev/${disksavail[$choicenumber]}3

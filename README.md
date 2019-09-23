@@ -58,12 +58,13 @@ List of todos:
 - Sort in installed AUR packages &#x2713;
 - Refactor the steps to use common definitions. &#x2713;
 - Find out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad. &#x2713;
+- Remove ftphack from project. Using scp to install machine from now on. &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
 - Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it.
-- Remove ftphack from project. Using scp to installing machine from now on.
+
 ___
 *Needed*
 
@@ -89,11 +90,21 @@ ___
 
 This is intended to install everything from scratch, but perhaps the ricing scripts will be able to branch out from this project if they can be separated well enough.
 
-An easy way to develop the script outside of a VM, and pull the changes into the VM, is to set up an FTP server on the host machine, and pull the changes through wget in a small script. The script I have made is `ftphack`. It needs as a minimum the host machine's ip in `/etc/hosts` like so, for example:
-
+An easy way to develop the script outside of a VM, and copy the changes into the VM, is to open up the VM, and start `sshd.service`, and set the root password to something easy:
 ```bash
-[ip address]	[hostname]
-192.168.x.x	devpc
+systemctl start sshd.service
+passwd
 ```
 
-That should speed up development somewhat. Of course the script needs to be gotten on the VM first, but that should be simple through `wget` as well!
+After which port 22 of the VM should be forwarded to another port on the host (3022 in the example here), and the files can be copied through `scp`:
+```bash
+# If the machine is powered off:
+VBoxManage modifyvm "VM name" --natpf1 "ssh,tcp,,3022,,22"
+# If the machine is powered on:
+VBoxManage controlvm "VM name" --natpf1 "ssh,tcp,,3022,,22"
+
+scp -r -P 3022 /path/to/arch-install/ root@127.0.0.1:
+```
+
+That should speed up development somewhat!
+Of course, the files can also be `scp`'ed to an actual machine being installed, when it's on the network!

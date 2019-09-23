@@ -31,18 +31,9 @@ cat $envinfopath | grep DEVMODE >/dev/null 2>&1
 retval=$?
 if [ $retval -eq 0 ]; then
 	devmode="$(cat $envinfopath | grep DEVMODE | awk -F '=' '{print $2}')"
-	echo "DEV MODE IS $devmode"
+	echo "DEVMODE IS $devmode"
 else
 	devmode="off"
-fi
-
-cat $envinfopath | grep TESTINGMODE >/dev/null 2>&1
-retval=$?
-if [ $retval -eq 0 ]; then
-	testingmode="$(cat $envinfopath | grep TESTINGMODE | awk -F '=' '{print $2}')"
-	echo "TESTING MODE IS $testingmode"
-else
-	testingmode="off"
 fi
 
 # To indicate that the chroot-step succeded:
@@ -94,7 +85,7 @@ proceed="no"
 while [ $proceed == "no" ]; do
 	read -p "Please enter the name of the computer: " hostname
 	
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		hostname="$devhostname"
 	fi
 
@@ -103,7 +94,7 @@ while [ $proceed == "no" ]; do
 		echo -e "Is the name \"$hostname\" okay? [Y/n]:"
 		read response
 
-		if [ $testingmode == "on" ]; then
+		if [ $devmode == "on" ]; then
 			response="y"
 		fi
 
@@ -172,7 +163,7 @@ while [ $proceed == "retry" ]; do
 	echo -e "Would you like to add the sublime-text repo to /etc/pacman.conf? [Y/n]:"
 	read response
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="y"
 	fi
 
@@ -256,7 +247,7 @@ for i in "${!categorynames[@]}"; do
 			echo -n "Would you like to install the packages? [Y/n]: "
 			read response
 
-			if [ $testingmode == "on" ]; then
+			if [ $devmode == "on" ]; then
 				if [ ${categorynames[$i]} == "System" ] || [ ${categorynames[$i]} == "Remote-access" ]\
 				 || [ ${categorynames[$i]} == "Networking" ] || [ ${categorynames[$i]} == "Hardware-drivers" ]\
 				 || [ ${categorynames[$i]} == "Terminal" ] || [ ${categorynames[$i]} == "Systray" ]\
@@ -319,7 +310,7 @@ while [ $proceed == "no" ]; do
 	echo -n "Add the first user. Please enter the username: "
 	read username
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		username="$devusername"
 	fi
 
@@ -328,7 +319,7 @@ while [ $proceed == "no" ]; do
 		echo -e "Is the name \"$username\" okay? [Y/n]:"
 		read response
 
-		if [ $testingmode == "on" ]; then
+		if [ $devmode == "on" ]; then
 			response="y"
 		fi
 
@@ -370,8 +361,8 @@ useradd -m -U -G $groups$extragroups -s /bin/bash $username
 echo "Setting password for $username..."
 retval=10
 while [ $retval -ne 0 ]; do
-	if [ $testingmode == "on" ]; then
-		echo "TESTINGMODE, password is: hunter2"
+	if [ $devmode == "on" ]; then
+		echo "DEVMODE, password is: hunter2"
 		yes hunter2 | passwd $username
 		retval=$?
 	else
@@ -405,8 +396,8 @@ fi
 echo "Please enter password for root..."
 retval=10
 while [ $retval -ne 0 ]; do
-	if [ $testingmode == "on" ]; then
-		echo "TESTINGMODE, password is: hunter2"
+	if [ $devmode == "on" ]; then
+		echo "DEVMODE, password is: hunter2"
 		yes hunter2 | passwd
 		retval=$?
 	else
@@ -425,7 +416,7 @@ while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the AUR helper pikaur, and AUR packages? [Y/n]:"
 	read response
 	
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="y"
 	fi
 
@@ -501,7 +492,7 @@ while [ $proceed == "retry" ]; do
 	echo -e "Would you like to run the configuration scripts in $configscriptspath? [Y/n]:"
 	read response
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="y"
 	fi
 
@@ -565,7 +556,7 @@ while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the iakop dotfiles? [Y/n]:"
 	read response
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="y"
 	fi
 
@@ -604,7 +595,7 @@ while [ $proceed == "retry" ]; do
 	echo -e "Would you like to install the iakop linux-scripts? [Y/n]:"
 	read response
 
-	if [ $testingmode == "on" ]; then
+	if [ $devmode == "on" ]; then
 		response="y"
 	fi
 
