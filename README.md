@@ -63,7 +63,9 @@ ___
 **You are here:**
 - Remove ftphack from project. Using scp to installing machine from now on.
 ___
-
+*Needed*
+- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it.
+- FInd out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad.
 ___
 *Nice to haves*
 - Git configscript for the newly added user:
