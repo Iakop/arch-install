@@ -63,8 +63,18 @@ List of todos:
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it.
-
+- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it. It needs the following:
+```bash
+ection "Device"
+Identifier  "Card0"
+Driver      "intel"
+Option      "Backlight"  "/sys/devices/pci0000:00/0000:00:02.0/drm/card0/card0-eDP-1/intel_backlight/"
+EndSection
+```
+	- Of course, the card is set from whatever is returned from: 
+	```bash
+	sudo find /sys/ -type f -iname '*brightness*'
+	```
 ___
 *Needed*
 
