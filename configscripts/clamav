@@ -32,7 +32,7 @@ fi
 
 proceed="retry"
 while [ $proceed == "retry" ]; do
-	echo -n "Would you like to enable clamavs clamd? [Y/n]: "
+	echo -n "Would you like to enable the clamav-freshclam service? [Y/n]: "
 	read response
 
 	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
@@ -51,8 +51,8 @@ if [ $proceed == "yes" ]; then
 	freshclam
 
 	# Enable service:
-	echo "Enabling $pkgname service..."
-	systemctl enable clamav-daemon.service >/dev/null 2>&1
+	echo "Enabling clamav-freshclam service..."
+	systemctl enable clamav-freshclam.service >/dev/null 2>&1
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Error enabling service! exiting."
@@ -79,8 +79,8 @@ if [ $proceed == "yes" ]; then
 	fi
 elif [ $proceed == "no" ]; then
 	# Enable service:
-	echo "Disabling $pkgname service..."
-	systemctl disable clamav-daemon.service >/dev/null 2>&1
+	echo "Disabling clamav-freshclam service..."
+	systemctl disable clamav-freshclam.service >/dev/null 2>&1
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Error disabling service! exiting."
