@@ -59,25 +59,16 @@ List of todos:
 - Refactor the steps to use common definitions. &#x2713;
 - Find out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad. &#x2713;
 - Remove ftphack from project. Using scp to install machine from now on. &#x2713;
+- Add an xorg config of backlight. &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Add an xorg config of backlight. Intel driver has issues, for now maybe this can do it. It needs the following:
-```bash
-ection "Device"
-Identifier  "Card0"
-Driver      "intel"
-Option      "Backlight"  "/sys/devices/pci0000:00/0000:00:02.0/drm/card0/card0-eDP-1/intel_backlight/"
-EndSection
-```
-	- Of course, the card is set from whatever is returned from: 
-	```bash
-	sudo find /sys/ -type f -iname '*brightness*'
-	```
+- Add configuration of clamav and clamav-unofficial-sigs.
 ___
-*Needed*
 
+*Needed*
+- Add configuration of laptop-mode-tools.
 ___
 *Nice to haves*
 - Git configscript for the newly added user:

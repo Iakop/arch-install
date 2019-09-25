@@ -2,6 +2,13 @@
 
 pkgname="xorg"
 
+#configpath="/etc/X11/xorg.conf.d"
+configpath="/home/iakop/test"
+keyboardfile="00-keyboard.conf"
+keyboardfilepath="$configpath/$keyboardfile"
+intelblfile="00-intelbacklight.conf"
+intelblfilepath="$configpath/$intelblfile"
+
 ################
 # Package check
 ################
@@ -17,11 +24,11 @@ fi
 ################
 # Check if the 00-keyboard.conf file exists:
 replace="yes"
-if [ -f /etc/X11/xorg.conf.d/00-keyboard.conf ]; then 
+if [ -f $keyboardfilepath ]; then 
 	# Prompt the user wants to permanently replace it:
 	proceed="retry"
 	while [ $proceed == "retry" ]; do
-		echo -n "00-keyboard.conf already exists in /etc/X11/xorg.conf.d. Would you like to permanently replace it? [Y/n]: "
+		echo -n "$keyboardfile already exists in $configpath. Would you like to permanently replace it? [Y/n]: "
 		read response
 		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
 			proceed="yes"
@@ -38,12 +45,63 @@ fi
 # If replace is set to yes, the file will be generated:
 if [ $replace == "yes" ]; then
 	echo "Applying new keyboard map..."
-	echo -e "Section \"InputClass\"" > /etc/X11/xorg.conf.d/00-keyboard.conf
-	echo -e "\tIdentifier \"system-keyboard\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
-	echo -e "\tMatchIsKeyboard \"on\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
-	echo -e "\tOption \"XkbLayout\" \"dk\"" >> /etc/X11/xorg.conf.d/00-keyboard.conf
-	echo -e "EndSection" >> /etc/X11/xorg.conf.d/00-keyboard.conf
+	echo -e "Section \"InputClass\"" > $keyboardfilepath
+	echo -e "\tIdentifier \"system-keyboard\"" >> $keyboardfilepath
+	echo -e "\tMatchIsKeyboard \"on\"" >> $keyboardfilepath
+	echo -e "\tOption \"XkbLayout\" \"dk\"" >> $keyboardfilepath
+	echo -e "EndSection" >> $keyboardfilepath
 	echo "Done!"
+else
+	echo "The original config will not be replaced!"
+fi
+
+echo "Checking for backlight compatability..."
+# Check if the PC has backlight options:
+find /sys/ -type f -iname '*brightness*' | grep intel_backlight >/dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ]; then
+	echo "Intel backlight controller found!"
+
+fi
+
+# Check if the 00-intelbacklight.conf file exists:
+replace="yes"
+if [ -f $intelblfilepath ]; then 
+	# Prompt the user wants to permanently replace it:
+	proceed="retry"
+	while [ $proceed == "retry" ]; do
+		echo -n "$intelblfile already exists in $configpath. Would you like to permanently replace it? [Y/n]: "
+		read response
+		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+			proceed="yes"
+		elif [ "${response,,}" == "n" ]; then
+			proceed="no"
+			replace="no"		
+		else
+			echo "I did not understand that, please try again!"
+			proceed="retry"
+		fi
+	done
+fi
+
+# If replace is set to yes, the file will be generated:
+if [ $replace == "yes" ]; then
+
+	# Find the backlights that exist in the /sys/ path:
+	backlights=$(find /sys/ -type f -iname '*brightness*' | grep intel_backlight | sed 's/intel_backlight\/.*/intel_backlight\//' | uniq)
+	
+	# Clear out the existing config:
+	echo -n "" > $intelblfilepath
+
+	for i in "${!backlights[@]}"; do
+		echo "Applying new Intel backlight config..."
+		echo -e "Section \"Device\"" >> $intelblfilepath
+		echo -e "\tIdentifier \"Card$i\"" >> $intelblfilepath
+		echo -e "\tDriver \"intel\"" >> $intelblfilepath
+		echo -e "\tOption \"Backlight\" \"${backlights[$i]}\"" >> $intelblfilepath
+		echo -e "EndSection" >> $intelblfilepath
+	done
+
 else
 	echo "The original config will not be replaced!"
 fi

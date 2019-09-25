@@ -25,6 +25,18 @@ acpi
 bluez
 bluez-utils
 
+## Power-management ############
+!laptop-mode-tools
+acpid
+bluez-utils
+hdparm
+sdparm
+ethtool
+wireless_tools
+xorg-xset
+hal
+python-pyqt5
+
 ## Terminal ####################
 rxvt-unicode
 urxvt-perls
@@ -86,6 +98,7 @@ xarchiver
 ntfs-3g
 nfs-utils
 nextcloud-client
+zip
 
 ## Web #########################
 firefox
@@ -96,6 +109,8 @@ thunderbird
 tor
 !tor-browser
 transmission-gtk
+clamav
+!clamav-unofficial-sigs
 
 ## Pictures ####################
 feh
