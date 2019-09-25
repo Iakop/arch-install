@@ -1,0 +1,105 @@
+#!/bin/bash
+
+pkgname="clamav"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Prompt for enabling of clamav:
+
+# Using nc, the connection to the internet is checked
+echo "Checking for internet access..."
+dns=8.8.8.8
+ping -c1 $dns -W1 > /dev/null 2>&1
+retval=$?
+if [ $retval -eq 0 ] 
+then
+	echo "Connected to the internet!"
+else
+	echo "There is no connection, please remedy and run script again."
+	exit 1
+fi
+
+proceed="retry"
+while [ $proceed == "retry" ]; do
+	echo -n "Would you like to enable clamavs clamd? [Y/n]: "
+	read response
+
+	if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+		proceed="yes"
+	elif [ "${response,,}" == "n" ]; then
+		proceed="no"		
+	else
+		echo "I did not understand that, please try again!"
+		proceed="retry"
+	fi
+done
+
+if [ $proceed == "yes" ]; then
+	# Run freshclam to set up clamav:
+	echo "Running first time run of freshclam..."
+	freshclam
+
+	# Enable service:
+	echo "Enabling $pkgname service..."
+	systemctl enable clamav-daemon.service >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Error enabling service! exiting."
+		exit 1
+	fi
+
+	echo "Checking if Eicar-Test-Signature can be found..."
+	curl https://www.eicar.org/download/eicar.com.txt | clamscan - | grep "stdin: Eicar-Test-Signature FOUND" >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Eicar-Test-Signature not found ($retval). Exiting"
+		exit 1
+	fi
+
+	# Check for unofficial signature lists:
+	pacman -Qs clamav-unofficial-sigs >/dev/null 2>&1
+	retval=$?
+	if [ $retval -eq 0 ]; then
+		echo "clamav-unofficial-sigs found, adding update timer."
+		clamav-unofficial-sigs.sh
+		systemctl enable clamav-unofficial-sigs.timer
+	else
+		echo "Missing package clamav-unofficial-sigs! Unofficial sigs will not be configured."
+	fi
+elif [ $proceed == "no" ]; then
+	# Enable service:
+	echo "Disabling $pkgname service..."
+	systemctl disable clamav-daemon.service >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Error disabling service! exiting."
+		exit 1
+	fi
+
+	# Check for unofficial signature lists:
+	pacman -Qs clamav-unofficial-sigs >/dev/null 2>&1
+	retval=$?
+	if [ $retval -eq 0 ]; then
+		echo "clamav-unofficial-sigs found, disable update timer."
+		systemctl disable clamav-unofficial-sigs.timer
+	else
+		echo "Missing package clamav-unofficial-sigs! Unofficial sigs will not be configured."
+	fi
+fi
+
+###############
+# End of config
+###############
+
+echo "Done!"

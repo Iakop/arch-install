@@ -80,6 +80,7 @@ i3status
 i3blocks
 dmenu
 clipmenu
+clipnotify
 dunst
 arandr
 maim
