@@ -364,9 +364,9 @@ fi
 
 # The newer Nvidia drivers will blacklist nouveau, so only one can prevail:
 if [ $geforce1000plus -eq 0 ] || [ $geforce600to900 -eq 0 ]; then
-	graphicsdrivers+=("nvidia" "nvidia-utils" "lib32-nvidia-utils")
+	graphicsdrivers+=("nvidia" "nvidia-utils" "lib32-nvidia-utils" "nvidia-settings")
 elif [ $geforce400to500 -eq 0 ]; then
-	graphicsdrivers+=("nvidia-390xx" "nvidia-390xx-utils" "lib32-nvidia-390xx-utils")
+	graphicsdrivers+=("nvidia-390xx" "nvidia-390xx-utils" "lib32-nvidia-390xx-utils" "nvidia-settings")
 elif [ $geforce100to300 -eq 0 ]; then
 	graphicsdrivers+=("xf86-video-nouveau")
 fi
@@ -380,13 +380,13 @@ fi
 echo -e "$vgacontrollers" | grep -e Intel > /dev/null 2>&1
 intelcheck=$?
 if [ $intelcheck -eq 0 ]; then
-	graphicsdrivers+=("xf86-video-intel" "vulkan-intel")
+	graphicsdrivers+=("xf86-video-intel" "vulkan-intel" "lib32-vulkan-intel")
 fi
 
 echo -e "$vgacontrollers" | grep -e AMD > /dev/null 2>&1
 amdcheck=$?
 if [ $amdcheck -eq 0 ]; then
-	graphicsdrivers+=("xf86-video-amdgpu" "vulkan-radeon")
+	graphicsdrivers+=("xf86-video-amdgpu" "vulkan-radeon" "lib32-vulkan-radeon")
 fi
 
 echo -e "$vgacontrollers" | grep -e ATI > /dev/null 2>&1
