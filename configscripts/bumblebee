@@ -16,34 +16,41 @@ fi
 # Configuration
 ################
 # Check for required packages, and inform if it is missing:
+pacman -Qs bbswitch >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package bbswitch! Since bumblebee is installed, this is wanted. Installing..."
+	pacman -S bbswitch --noconfirm 
+fi
+
 pacman -Qs mesa >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
-	echo "Missing package mesa! Exiting." 
+	echo "Missing package mesa!" 
 fi
 
 pacman -Qs nvidia >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
-	echo "Missing package nvidia! Exiting." 
+	echo "Missing package nvidia!" 
 fi
 
 pacman -Qs xf86-video-intel >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
-	echo "Missing package xf86-video-intel! Exiting." 
+	echo "Missing package xf86-video-intel!" 
 fi
 
 pacman -Qs lib32-virtualgl >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
-	echo "Missing package lib32-virtualgl! Exiting." 
+	echo "Missing package lib32-virtualgl!" 
 fi
 
 pacman -Qs lib32-nvidia-utils >/dev/null 2>&1
 retval=$?
 if [ $retval -ne 0 ]; then
-	echo "Missing package lib32-nvidia-utils! Exiting." 
+	echo "Missing package lib32-nvidia-utils!" 
 fi
 
 ###############

@@ -432,7 +432,7 @@ if [ $? -eq 0 ]; then
 	fi
 
 	if [ $bumblebeesupport == "yes" ]; then
-		graphicsdrivers+=("bumblebee" "lib32-virtualgl" "primus_vk")
+		graphicsdrivers+=("bumblebee" "bbswitch" "lib32-virtualgl" "primus_vk")
 	fi
 fi
 
