@@ -42,6 +42,10 @@ List of todos:
 	- openssh &#x2713;
 	- bumblebee &#x2713;
 	- xorg (keyboard) &#x2713;
+	- xorg (backlight)  &#x2713;
+ 	- clamav &#x2713;
+ 	- laptop-mode-tools &#x2713;
+
 - Add systemwide mime-app definitions for: &#x2713;
 	- feh &#x2713;
 	- vim &#x2713;
@@ -59,16 +63,15 @@ List of todos:
 - Refactor the steps to use common definitions. &#x2713;
 - Find out why Nvidia drivers weren't properly installed on the Lenovo Thinkpad. &#x2713;
 - Remove ftphack from project. Using scp to install machine from now on. &#x2713;
-- Add an xorg config of backlight. &#x2713;
 
 **CONGRATULATIONS, THE INSTALLER INSTALLS A WHOLE SYSTEM**
 ___
 **You are here:**
-- Add configuration of clamav and clamav-unofficial-sigs.
+
 ___
 
 *Needed*
-- Add configuration of laptop-mode-tools.
+...
 ___
 *Nice to haves*
 - Git configscript for the newly added user:

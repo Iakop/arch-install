@@ -1,0 +1,140 @@
+#!/bin/bash
+
+pkgname="laptop-mode-tools"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+################
+# Configuration
+################
+# Check for separate package dependencies:
+pacman -Qs acpid >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package acpid! Exiting."
+	exit 1
+fi
+
+pacman -Qs bluez-utils >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package bluez-utils! Exiting."
+	exit 1
+fi
+
+pacman -Qs hdparm >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package hdparm! Exiting."
+	exit 1
+fi
+
+pacman -Qs sdparm >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package sdparm! Exiting."
+	exit 1
+fi
+
+pacman -Qs ethtool >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package ethtool! Exiting."
+	exit 1
+fi
+
+pacman -Qs wireless_tools >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package wireless_tools! Exiting."
+	exit 1
+fi
+
+pacman -Qs xorg-xset >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package xorg-xset! Exiting."
+	exit 1
+fi
+
+pacman -Qs hal >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package hal! Exiting."
+	exit 1
+fi
+
+pacman -Qs python-pyqt5 >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package python-pyqt5! Exiting."
+	exit 1
+fi
+
+# Set the laptop-mode-tools standard configurations:
+declare -a lmtsettings
+
+lmtsettings=(\
+"SUPERHE=1" \
+"INTEL_PSTATE=1" \
+"KBDLIGHT=0" \
+"BRIGHTNESS=0" \
+"TERMINAL=1" \
+"SCHED_SMT_POWER_SAVINGS=1" \
+"AC97_POWER=1" \
+"WIRELESS_POWER_SAVING=1" \
+"CPU_FREQUENCY=1" \
+"CPU_THROTTLING=1" \
+"PCIE_ASPM=1" \
+"INTEL_HDA_POWER=1" \
+"AUTO_HIBERNATION=0" \
+"ETHERNET=1" \
+"SCHED_MC_POWER_SAVINGS=1" \
+"IPW_POWER=1" \
+"HAL_POLLING=1" \
+"START_STOP=1" \
+"NMI_WATCHDOG=1" \
+"CONFIG_FILES=0" \
+"BATTERY_LEVEL_POLLING=1" \
+"DPMS_STANDBY=1" \
+"RADEON_DPM=1" \
+"VGASWITCHEROO=1" \
+"CPU_HOTPLUG=0" \
+"BLUETOOTH=1" \
+"EXEC_COMMANDS=1" \
+"RUNTIME_AUTOSUSPEND=1" \
+"INTEL_SATA_POWER=1" \
+"AHCI_RUNTIME_PM=1" \
+"IWL_POWER=1" \
+"VIDEO_OUTPUTS=0" \
+)
+
+for i in "${!lmtsettings[@]}"; do
+	settingname=$(echo "${lmtsettings[$i]}" | awk -F '=' '{print $1}')
+	setting=$(echo "${lmtsettings[$i]}" | awk -F '=' '{print $2}')
+	filetoedit=$(grep -r "^\(CONTROL\|ENABLE\)_$settingname" /etc/laptop-mode/conf.d | awk -F ':' '{print $1}')
+	fullsettingname=$(grep -r "^\(CONTROL\|ENABLE\)_$settingname" /etc/laptop-mode/conf.d | awk -F ':' '{print $2}' | awk -F '=' '{print $1}')
+	echo "Setting $settingname to $setting, in $filetoedit..."
+	sed "s/\(${fullsettingname}=\).*/\1${setting}/" $filetoedit > /tmp/edit.conf
+done
+
+###############
+# End of config
+###############
+# Enable the service for laptop-mode-tools:
+echo "Enabling laptop-mode service..."
+systemctl enable laptop-mode.service >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Failed enabling laptop-mode service (Error code: $retval). Exiting."
+	exit 1
+fi
+echo "Done!"

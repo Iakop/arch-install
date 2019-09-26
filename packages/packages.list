@@ -28,7 +28,6 @@ bluez-utils
 ## Power-management ############
 !laptop-mode-tools
 acpid
-bluez-utils
 hdparm
 sdparm
 ethtool
