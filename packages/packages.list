@@ -170,6 +170,13 @@ steam
 retroarch
 retroarch-assets-xmb
 libretro
+innoextract
+
+## Wine ########################
+wine
+wine-mono
+wine_gecko
+lib32-libpulse
 
 ## VirtualBox-Host #############
 virtualbox
