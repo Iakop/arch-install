@@ -177,6 +177,9 @@ wine
 wine-mono
 wine_gecko
 lib32-libpulse
+lib32-alsa-plugins
+lib32-openal
+lib32-mpg123
 
 ## VirtualBox-Host #############
 virtualbox
