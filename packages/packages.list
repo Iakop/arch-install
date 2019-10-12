@@ -24,6 +24,7 @@ gufw
 acpi
 bluez
 bluez-utils
+bluez-plugins
 
 ## Power-management ############
 !laptop-mode-tools
@@ -171,6 +172,7 @@ retroarch
 retroarch-assets-xmb
 libretro
 innoextract
+joyutils
 
 ## Wine ########################
 wine
