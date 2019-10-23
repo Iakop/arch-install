@@ -34,7 +34,7 @@ sdparm
 ethtool
 wireless_tools
 xorg-xset
-hal
+!hal
 python-pyqt5
 
 ## Terminal ####################
