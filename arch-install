@@ -375,6 +375,8 @@ fi
 if [ $nvidiacheck -eq 0 ] && [ $geforce100to300 -ne 0 ] && [ $geforce1000plus -ne 0 ] && [ $geforce600to900 -ne 0 ] && [ $geforce400to500 -ne 0 ]; then
 	oldnvidia=0
 	graphicsdrivers+=("xf86-video-nouveau")
+else
+	oldnvidia=1
 fi
 
 echo -e "$vgacontrollers" | grep -e Intel > /dev/null 2>&1
@@ -402,7 +404,7 @@ if [ $vmwaresvgacheck -eq 0 ]; then
 fi
 
 # Check for common drivers to be installed:
-if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $oldnvidia -eq 0 ] || [ $vmwaresvgacheck -eq 0 ]; then
+if [ $intelcheck -eq 0 ] || [ $amdcheck -eq 0 ] || [ $aticheck -eq 0 ] || [ $oldnvidia -eq 0 ] || [ $geforce100to300 -eq 0 ] || [ $vmwaresvgacheck -eq 0 ]; then
 	graphicsdrivers+=("mesa" "lib32-mesa")
 fi
 # Check for common vulkan-icd-loader to be installed:
