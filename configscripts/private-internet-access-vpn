@@ -1,0 +1,89 @@
+#!/bin/bash
+
+pkgname="private-internet-access-vpn"
+
+################
+# Package check
+################
+pacman -Qs $pkgname >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package $pkgname! Exiting."
+	exit 1
+fi
+
+configpath="/etc/private-internet-access/"
+loginfile="login.conf"
+loginfilepath="$configpath/$loginfile"
+
+################
+# Configuration
+################
+# Check for separate package dependencies:
+pacman -Qs networkmanager >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package networkmanager! Exiting."
+	exit 1
+fi
+
+pacman -Qs openvpn >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package openvpn! Exiting."
+	exit 1
+fi
+
+pacman -Qs networkmanager-openvpn >/dev/null 2>&1
+retval=$?
+if [ $retval -ne 0 ]; then
+	echo "Missing package networkmanager-openvpn! Exiting."
+	exit 1
+fi
+
+# Check if the 00-keyboard.conf file exists:
+replace="yes"
+if [ -f $loginfilepath ]; then 
+	# Prompt the user wants to permanently replace it:
+	proceed="retry"
+	while [ $proceed == "retry" ]; do
+		echo -n "$loginfilepath already exists in $configpath. Would you like to permanently replace it? [Y/n]: "
+		read response
+		if [ "${response,,}" == "y" ] || [ "${response,,}" == "" ]; then
+			proceed="yes"
+		elif [ "${response,,}" == "n" ]; then
+			proceed="no"
+			replace="no"		
+		else
+			echo "I did not understand that, please try again!"
+			proceed="retry"
+		fi
+	done
+fi
+
+# If replace is set to yes, the file will be generated:
+if [ $replace == "yes" ]; then
+	# The user is prompted to input username and password:
+	echo -n "Please enter username: "
+	read vpnusername
+	echo -n "Please enter user password: "
+	read -s vpnpassword
+	echo "Applying the user..."
+	echo -e "$vpnusername" > $loginfilepath
+	echo -e "$vpnpassword" >> $loginfilepath
+	echo "Done!"
+	# Making the file only editable by root:
+	chmod 0600 $loginfilepath
+	chown root:root $loginfilepath
+else
+	echo "The original config will not be replaced!"
+fi
+
+# Activate the configuration:
+echo "Activating the configuration..."
+pia -a
+
+###############
+# End of config
+###############
+echo "Done!"

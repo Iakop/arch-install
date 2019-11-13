@@ -11,6 +11,11 @@ mate-polkit
 openssh
 tigervnc
 
+## VPN #########################
+openvpn
+networkmanager-openvpn
+!private-internet-access-vpn
+
 ## Networking ##################
 networkmanager
 dhclient
