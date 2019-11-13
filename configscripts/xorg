@@ -2,8 +2,7 @@
 
 pkgname="xorg"
 
-#configpath="/etc/X11/xorg.conf.d"
-configpath="/home/iakop/test"
+configpath="/etc/X11/xorg.conf.d"
 keyboardfile="00-keyboard.conf"
 keyboardfilepath="$configpath/$keyboardfile"
 intelblfile="00-intelbacklight.conf"
