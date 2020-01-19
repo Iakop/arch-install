@@ -97,6 +97,9 @@ thunar
 tumbler
 ffmpegthumbnailer
 gvfs
+gvfs-smb
+sshfs
+
 thunar-volman
 unrar
 unzip
