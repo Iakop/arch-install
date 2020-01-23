@@ -4,8 +4,6 @@
 base
 base-devel
 mate-polkit
-!plymouth
-!plymouth-theme-arch-breeze-git
 
 ## Remote-access ###############
 openssh
@@ -80,7 +78,7 @@ xorg
 xorg-xinit
 i3-gaps
 !compton-tryone-git
-!i3lock-fancy-git
+!i3lock-fancy-rapid-git
 i3status
 i3blocks
 dmenu
@@ -99,7 +97,6 @@ ffmpegthumbnailer
 gvfs
 gvfs-smb
 sshfs
-
 thunar-volman
 unrar
 unzip
@@ -115,8 +112,6 @@ flashplugin
 thunderbird
 
 ## Torrenting ##################
-tor
-!tor-browser
 transmission-gtk
 clamav
 !clamav-unofficial-sigs
@@ -144,7 +139,6 @@ ffmpeg
 handbrake
 mpv
 youtube-dl
-kodi
 !flashplayer-standalone
 
 ## Ricing ######################
@@ -173,15 +167,6 @@ zathura
 zathura-pdf-poppler
 ghostscript
 
-## Games #######################
-lutris
-steam
-retroarch
-retroarch-assets-xmb
-libretro
-innoextract
-joyutils
-
 ## Wine ########################
 wine
 wine-mono
@@ -200,21 +185,7 @@ virtualbox-host-modules-arch
 virtualbox-guest-modules-arch
 virtualbox-guest-utils
 
-## LaTeX #######################
-texlive-most
-texlive-lang
-biber
-texmaker
-
-## Making ######################
-cura
-kicad
-kicad-library
-kicad-library-3d
-!digilent.waveforms
-
 ## Messaging ###################
 discord
-caprine
 
 ## END #########################
