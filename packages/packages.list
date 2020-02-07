@@ -99,7 +99,6 @@ ffmpegthumbnailer
 gvfs
 gvfs-smb
 sshfs
-
 thunar-volman
 unrar
 unzip
@@ -166,6 +165,10 @@ python
 python-pip
 arduino
 arduino-avr-core
+
+## Android #####################
+android-tools
+android-udev
 
 ## Documents ###################
 poppler
