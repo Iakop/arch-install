@@ -40,3 +40,43 @@ pacquery-list() {
 #		"android-udev"\
 #		"libmtp"\
 #		)
+
+prompt_yn() {
+	input_prompt_yn=$1
+	default_yn=$2
+
+	status_yn=2
+	while [ $status_yn -eq 2 ]; do
+		read -p "$input_prompt_yn" response_yn
+
+		if [ "${response_yn,,}" == "" ]; then
+			response_yn=$default
+		fi
+
+		if [ "${response_yn,,}" == "y" ]; then
+			status_yn=0
+		elif [ "${response_yn,,}" == "n" ]; then
+			status_yn=1	
+		else
+			echo "I did not understand that, please try again!"
+			status_yn=2
+		fi
+	done
+	return $status_yn
+}
+
+# Prompt for text
+prompt_txt() {
+	input_prompt_txt=$1
+	default_txt=$2
+
+	status_txt=1
+	while [ $status_txt -eq 1 ]; do
+		read -p "$input_prompt_txt" response_txt
+
+		prompt_yn "Is \"$response_txt\" ok?" "y"
+		status_txt=$?
+	done
+
+	echo "$response_txt"
+}
