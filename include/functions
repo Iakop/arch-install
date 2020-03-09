@@ -1,0 +1,42 @@
+#!/bin/bash
+# Commonly used functions in the install script
+# Author: Jacob Bechmann Pedersen
+# Date: 2020-03-07
+
+# Queries pacman for a package by name
+# Returns 1, if package is not found.
+pacquery() {
+	pkgname=$1
+	pacman -Qs $pkgname >/dev/null 2>&1
+	retval=$?
+	if [ $retval -ne 0 ]; then
+		echo "Missing package $pkgname!"
+		return 1
+	else
+		echo "Found package $pkgname!"
+		return 0
+	fi
+}
+
+# Will query pacman by a list of packages,
+# passed as argument in the form of its name,
+# and not dereferenced.
+# Returns number of unmet dependencies.
+pacquery-list() {
+	list_name=$1[@]
+	list=("${!list_name}")
+	misses=0
+	for i in "${!list[@]}"
+	do
+		pacquery ${list[$i]}
+		misses=$[$misses+$?]
+	done
+	return $misses
+}
+
+#Dependencies are written in this format:
+#dependencies=(\
+#		"android-tools"\
+#		"android-udev"\
+#		"libmtp"\
+#		)
