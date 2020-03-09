@@ -1,4 +1,7 @@
 #!/bin/bash
+# Arch installation script
+# Author: Jacob Bechmann Pedersen
+# Date: 2019-07-18
 
 ###########################################################################
 # Check the environment

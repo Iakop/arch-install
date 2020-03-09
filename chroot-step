@@ -1,4 +1,7 @@
 #!/bin/bash
+# Arch installation chroot step
+# Author: Jacob Bechmann Pedersen
+# Date: 2019-08-28
 
 ###########################################################################
 # Check the environment
