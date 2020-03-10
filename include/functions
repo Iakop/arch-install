@@ -6,9 +6,9 @@
 # Queries pacman for a package by name
 # Returns 1, if package is not found.
 pacquery() {
-	pkgname=$1
+	local pkgname=$1
 	pacman -Qs $pkgname >/dev/null 2>&1
-	retval=$?
+	local retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Missing package $pkgname!"
 		return 1
@@ -23,9 +23,9 @@ pacquery() {
 # and not dereferenced.
 # Returns number of unmet dependencies.
 pacquery-list() {
-	list_name=$1[@]
-	list=("${!list_name}")
-	misses=0
+	local list_name=$1[@]
+	local list=("${!list_name}")
+	local misses=0
 	for i in "${!list[@]}"
 	do
 		pacquery ${list[$i]}
@@ -41,42 +41,56 @@ pacquery-list() {
 #		"libmtp"\
 #		)
 
+# Will prompt for a yes or no: [y/n]
 prompt_yn() {
-	input_prompt_yn=$1
-	default_yn=$2
+	local input_prompt=$1
+	local default=$2
 
-	status_yn=2
-	while [ $status_yn -eq 2 ]; do
-		read -p "$input_prompt_yn" response_yn
+	local y="y" #The case for Y
+	local n="n" #The case for N
 
-		if [ "${response_yn,,}" == "" ]; then
-			response_yn=$default
+	if [ "${default,,}" == "y" ]; then
+		y="Y"
+	elif [ "${default,,}" == "n" ]; then
+		n="N"
+	fi
+
+	local status=2
+	local response
+	while [ $status -eq 2 ]; do
+		read -p "$input_prompt [$y/$n]: " response
+
+		if [ "${response,,}" == "" ]; then
+			response=$default
 		fi
 
-		if [ "${response_yn,,}" == "y" ]; then
-			status_yn=0
-		elif [ "${response_yn,,}" == "n" ]; then
-			status_yn=1	
+		if [ "${response,,}" == "y" ]; then
+			status=0
+		elif [ "${response,,}" == "n" ]; then
+			status=1	
 		else
 			echo "I did not understand that, please try again!"
-			status_yn=2
+			status=2
 		fi
 	done
-	return $status_yn
+	return $status
 }
 
 # Prompt for text
+# The prompt will then be followed by a confirmation prompt
+# through prompt_yn
 prompt_txt() {
-	input_prompt_txt=$1
-	default_txt=$2
+	local input_prompt=$1
+	local default=$2
 
-	status_txt=1
-	while [ $status_txt -eq 1 ]; do
-		read -p "$input_prompt_txt" response_txt
+	local status=1
+	local response
+	while [ $status -eq 1 ]; do
+		read -p "$input_prompt: " response
 
-		prompt_yn "Is \"$response_txt\" ok?" "y"
-		status_txt=$?
+		prompt_yn "Is \"$response\" ok?" $default
+		status=$?
 	done
 
-	echo "$response_txt"
+	echo "$response"
 }
