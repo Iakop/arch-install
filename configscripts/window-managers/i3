@@ -1,0 +1,22 @@
+#!/bin/bash
+# Configuration script for i3
+# Author: Jacob Bachmann Pedersen
+# Date: 2020-03-07
+
+# First, configure the dotfiles for the window manager:
+dependencies=(\
+		"android-tools"\
+		"android-udev"\
+		"libmtp"\
+		)
+
+# Check for dependencies:
+pacquery-list git || exit $?
+
+# Use git to pull down the dotfiles:
+git clone https://github.com/iakop/dotfiles /tmp/dotfiles
+
+# Install the dotfiles:
+echo "Installing dotfiles for $username..."
+(cd /tmp/dotfiles; sudo -u $username (yes | /tmp/dotfiles/install))
+

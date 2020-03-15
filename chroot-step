@@ -9,7 +9,7 @@
 
 # All the prerequisites (paths, etc.) are defined:
 prefix="/root"
-source "$prefix/shared"
+source "$prefix/include/shared"
 
 # Check for environment variables:
 cat $envinfopath | grep VMTYPE >/dev/null 2>&1

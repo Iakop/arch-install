@@ -1,0 +1,46 @@
+#!/bin/bash
+# Configuration template for arch installer
+# Author: Jacob Bechmann Pedersen
+# Date: 2020-03-07
+
+# Username and hostname:
+username=iakop
+hostname=archpc
+
+# Passwords (do not distribute your actual passwords, and always leave this as the placeholder value):
+userpassword=hunter2
+rootpassword=hunter2
+
+# VM is usually none, unless setting up on a virtual machine:
+vmtype=none
+virtualization=none
+
+# Boot type
+boot=uefi
+
+# Install disk
+installdisk=/dev/sda
+
+# Swap size in GB
+swapsize=8
+
+# Timezone is usually Region/City:
+timezone=Europe/Copenhagen
+
+# Packages:
+aur=true
+sublime=true
+
+# If uefi enabled, efibootmgr is needed:
+bootpackages=(\
+	efibootmgr\
+	)
+
+ucodepackages=(\
+	intel-ucode\
+	)
+
+graphicspackages=(\
+	xf86-video-nouveau\
+	xf86-video-intel\
+	)

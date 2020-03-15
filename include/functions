@@ -42,7 +42,7 @@ pacquery-list() {
 #		)
 
 # Will prompt for a yes or no: [y/n]
-prompt_yn() {
+prompt-yn() {
 	local input_prompt=$1
 	local default=$2
 
@@ -79,7 +79,9 @@ prompt_yn() {
 # Prompt for text
 # The prompt will then be followed by a confirmation prompt
 # through prompt_yn
-prompt_txt() {
+# Use: prompt-txt "Please enter" y output
+# output can be printed: echo "$output"
+prompt-txt() {
 	local input_prompt=$1
 	local default=$2
 
@@ -88,9 +90,97 @@ prompt_txt() {
 	while [ $status -eq 1 ]; do
 		read -p "$input_prompt: " response
 
-		prompt_yn "Is \"$response\" ok?" $default
+		prompt-yn "Is \"$response\" ok?" $default
 		status=$?
 	done
 
-	echo "$response"
+	eval "$3='$response'"
+}
+
+parse-pkg-list() {
+	local packageslistpath=$1
+
+	echo "Parsing packages in $packageslistpath..."
+	local packagecategories=$(cat $packageslistpath | grep -n "^## .*#")
+	local categorylines=($(echo "$packagecategories" | awk -F ":" '{print $1}'))
+	local categorynames=($(echo "$packagecategories" | tr -d "#" | awk -F ": " '{print $2}' | tr -d " "))
+
+	# Check whether the category is wanted, or if is BEGIN or END category:
+	for i in "${!categorynames[@]}"; do
+		if [ "${categorynames[$i]}" == "BEGIN" ] || [ "${categorynames[$i]}" == "END" ]; then
+			continue
+		
+		elif [ "${categorynames[$i]}" == "VirtualBox-Host" ] && [ "$vmtype" == "virtualbox" ]; then
+			echo "The machine is VirtualBox guest, skipping host packages..."
+			continue
+
+		elif [ "${categorynames[$i]}" == "VirtualBox-Guest" ] && [ "$vmtype" == "none" ]; then
+			echo "The machine is real, skipping VirtualBox guest packages..."
+			continue
+
+		else
+			# Add the packages listed to their appropriate lists:
+			local startline=$(echo "${categorylines[$i]}" | awk '{print $1 + 1}')
+			local endline=$(echo "${categorylines[$i+1]}" | awk '{print $1 - 1}')
+			local pkgs=$(sed -n "${startline},${endline}p" $packageslistpath)
+			local regpkgs=$(echo "$pkgs" | grep "^[^\!]" | tr ' ' '\n')
+			local aurpkgs=$(echo "$pkgs" | grep "^!" | tr ' ' '\n' | sed 's/^\!//')
+			# Output the list:
+			echo "Packages in ${categorynames[$i]}:"
+			echo -e "\tPacman:"
+			echo -e "\t$regpkgs" | sed 's/^/\t/'
+			echo -e "\tAUR:"
+			echo -e "\t$aurpkgs" | sed 's/^/\t/'
+		fi
+	done
+}
+
+# Prints a list nicely formatted:
+print-list() {
+	local listcontents
+	local listname=$1
+	local title=$2
+
+	echo "$title:"
+
+	eval "listcontents=(\${$listname[@]})"
+	for i in "${!listcontents[@]}"
+	do
+		echo -e "\t${listcontents[$i]}"
+	done
+}
+
+prompt-list() {
+	local prompt=$1
+	local listname=$2
+	local listcontents
+	local formattedlist
+	local choice
+
+	eval "listcontents=(\${$listname[@]})"
+	for i in "${!listcontents[@]}"; do
+		formattedlist+=("$i)${listcontents[$i]}")
+	done
+	formattedlist+=("q)None")
+
+	local legalchoice=false
+	while ! $legalchoice; do
+		print-list formattedlist "$prompt"
+		prompt-txt "Choice" y choice
+		if [ ! "${listcontents[$choice]}" == "" ] || [ "$choice" == "q" ] && [ ! "$choice" == "" ]; then
+			legalchoice=true
+		else
+			prompt="Not a choice on the list, please try again"
+		fi
+	done
+
+	eval "$3='$choice'"
+}
+
+find-packagelists() {
+	local packagecategories=($(grep -n "packages.*:" <(/usr/bin/ls -Rw1 packages)))
+	local packagelists=($)
+	#TODO: Get the lists categorized
+
+	print-list packagecategories "Package categories"
 }

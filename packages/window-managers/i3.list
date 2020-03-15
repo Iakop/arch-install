@@ -1,0 +1,75 @@
+## BEGIN #######################
+
+## System ######################
+mate-polkit
+lxdm
+!lxdm-themes
+
+## Windowmanager ###############
+xorg
+xorg-xinit
+i3-gaps
+!compton-tryone-git
+!i3lock-fancy-git
+i3status
+i3blocks
+dmenu
+clipmenu
+clipnotify
+dunst
+arandr
+maim
+xclip
+wmctrl
+
+## Terminal ####################
+rxvt-unicode
+urxvt-perls
+
+## Systray #####################
+redshift
+python-gobject
+blueman
+network-manager-applet
+cbatticon
+!caffeine-ng
+
+## Fonts #######################
+noto-fonts
+noto-fonts-extra
+awesome-terminal-fonts
+ttf-liberation
+ttf-dejavu
+wqy-zenhei
+!ttf-monaco
+!montserrat-font-otf
+!otf-san-francisco
+
+## Files #######################
+thunar
+tumbler
+ffmpegthumbnailer
+gvfs
+gvfs-smb
+thunar-volman
+engrampa
+
+## Documents ###################
+zathura
+zathura-pdf-poppler
+
+## Ricing ######################
+python-pywal
+lxappearance
+qt5-styleplugins
+
+## Icons #######################
+!la-capitaine-icon-theme
+
+## Themes ######################
+arc-gtk-theme
+
+## Pictures ####################
+feh
+
+## END #########################

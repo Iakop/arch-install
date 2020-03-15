@@ -1,0 +1,91 @@
+## BEGIN #######################
+
+## System ######################
+base
+base-devel
+grub
+
+## Networking ##################
+networkmanager
+dhclient
+avahi
+nss-mdns
+iptables
+ufw
+
+## Remote-access ###############
+openssh
+
+## VPN #########################
+openvpn
+networkmanager-openvpn
+!private-internet-access-vpn
+
+## Hardware-drivers ############
+acpi
+bluez
+bluez-utils
+bluez-plugins
+
+## Terminal ####################
+bash-completion
+neofetch
+htop
+vim
+
+## Files #######################
+sshfs
+unrar
+unzip
+ntfs-3g
+nfs-utils
+zip
+
+## Torrenting ##################
+clamav
+!clamav-unofficial-sigs
+
+## Pictures ####################
+imagemagick
+
+## Audio #######################
+pulseaudio
+pulseaudio-alsa
+pavucontrol
+pasystray
+playerctl
+pamixer
+alsa-utils
+
+## Video #######################
+ffmpeg
+youtube-dl
+
+## Programming #################
+linux-headers
+git
+python
+python-pip
+
+## Android #####################
+android-tools
+android-udev
+
+## Documents ###################
+poppler
+ghostscript
+
+## Wine ########################
+wine
+wine-mono
+wine_gecko
+lib32-libpulse
+lib32-alsa-plugins
+lib32-openal
+lib32-mpg123
+
+## VirtualBox-Guest ############
+virtualbox-guest-modules-arch
+virtualbox-guest-utils
+
+## END #########################

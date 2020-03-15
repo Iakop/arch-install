@@ -1,4 +1,16 @@
 #!/bin/bash
+# Paths used in install script
+# Author: Jacob Bechmann Pedersen
+# Date: 2020-03-07
+
+# Includes
+shared="shared"
+sharedpath="$prefix/include/$shared"
+functions="functions"
+functionspath="$prefix/include/$functions"
+
+# Source includes:
+source $functionspath
 
 # Development mode variables:
 devusername="iakop"
@@ -10,19 +22,22 @@ archinstallpath="$prefix/$archinstall"
 chrootstep="chroot-step"
 chrootsteppath="$prefix/$chrootstep"
 
-# Ftphack:
-ftphack="ftphack"
-ftphackpath="$prefix/$ftphack"
+# Config:
+config="config"
+configpath="$prefix/$config"
 
 # Test files:
 testpci="testpci"
 testpcipath="test/$testpci"
 
-# Info doesn't exist before the installer runs: 
+# Info doesn't exist before the installer runs:
 if [ ! -d "$prefix/info" ]; then
 	mkdir "$prefix/info"
 fi
+
 # Environment and settings info:
+configinfo="config.info"
+configinfopath="$prefix/info/$configinfo"
 envinfo="env.info"
 envinfopath="$prefix/info/$envinfo"
 tzinfo="tz.info"

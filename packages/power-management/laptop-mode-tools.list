@@ -1,0 +1,14 @@
+## BEGIN #######################
+
+## Power-management ############
+!laptop-mode-tools
+acpid
+hdparm
+sdparm
+ethtool
+wireless_tools
+xorg-xset
+!hal
+python-pyqt5
+
+## END #########################

@@ -1,0 +1,12 @@
+## BEGIN #######################
+
+## Power-management ############
+tlp
+acpi_call
+ethtool
+lsb-release
+smartmontools
+tp_smapi
+x86_energy_perf_policy
+
+## END #########################

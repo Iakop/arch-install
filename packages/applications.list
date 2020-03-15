@@ -1,0 +1,73 @@
+## BEGIN #######################
+
+## Networking ##################
+gufw
+
+## Remote-access ###############
+tigervnc
+
+## Fun #########################
+cmatrix
+lolcat
+
+## Files #######################
+nextcloud-client
+
+## Web #########################
+firefox
+flashplugin
+evolution
+
+## Torrenting ##################
+!tor-browser
+transmission-gtk
+transmission-remote-gtk
+
+## Pictures ####################
+gimp
+krita
+
+## Audio #######################
+!spotify
+!ffmpeg-compat-57
+zenity
+
+## Video #######################
+handbrake
+mpv
+
+## Programming #################
+arduino
+arduino-avr-core
+
+## Games #######################
+steam
+innoextract
+joyutils
+
+## VirtualBox-Host #############
+virtualbox
+virtualbox-host-modules-arch
+!virtualbox-ext-oracle
+
+## LaTeX #######################
+texlive-most
+texlive-lang
+biber
+texmaker
+
+## Documents ###################
+libreoffice-still
+
+## Making ######################
+cura
+kicad
+kicad-library
+kicad-library-3d
+!digilent.waveforms
+
+## Messaging ###################
+discord
+caprine
+
+## END #########################
