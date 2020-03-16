@@ -97,13 +97,32 @@ prompt-txt() {
 	eval "$3='$response'"
 }
 
+# Prints a list nicely formatted:
+print-list() {
+	local listcontents
+	local listname=$1
+	local title=$2
+
+	echo "$title:"
+
+	eval "listcontents=(\${$listname[@]})"
+	for i in "${!listcontents[@]}"
+	do
+		echo -e "\t${listcontents[$i]}"
+	done
+}
+
+# Use:
+# parse-pkg-list /path/to/package/1-category/lists output-pac output-aur
 parse-pkg-list() {
 	local packageslistpath=$1
 
-	echo "Parsing packages in $packageslistpath..."
 	local packagecategories=$(cat $packageslistpath | grep -n "^## .*#")
 	local categorylines=($(echo "$packagecategories" | awk -F ":" '{print $1}'))
 	local categorynames=($(echo "$packagecategories" | tr -d "#" | awk -F ": " '{print $2}' | tr -d " "))
+
+	local totalpacpkgs
+	local totalaurpkgs
 
 	# Check whether the category is wanted, or if is BEGIN or END category:
 	for i in "${!categorynames[@]}"; do
@@ -123,31 +142,23 @@ parse-pkg-list() {
 			local startline=$(echo "${categorylines[$i]}" | awk '{print $1 + 1}')
 			local endline=$(echo "${categorylines[$i+1]}" | awk '{print $1 - 1}')
 			local pkgs=$(sed -n "${startline},${endline}p" $packageslistpath)
-			local regpkgs=$(echo "$pkgs" | grep "^[^\!]" | tr ' ' '\n')
-			local aurpkgs=$(echo "$pkgs" | grep "^!" | tr ' ' '\n' | sed 's/^\!//')
+			local tmppacpkgs=($(echo "$pkgs" | grep "^[^\!]" | tr ' ' '\n'))
+			local tmpaurpkgs=($(echo "$pkgs" | grep "^!" | tr ' ' '\n' | sed 's/^\!//'))
 			# Output the list:
-			echo "Packages in ${categorynames[$i]}:"
-			echo -e "\tPacman:"
-			echo -e "\t$regpkgs" | sed 's/^/\t/'
-			echo -e "\tAUR:"
-			echo -e "\t$aurpkgs" | sed 's/^/\t/'
+			#echo "Packages in ${categorynames[$i]}:"
+			#print-list tmppacpkgs "Pacman"
+			#print-list tmpaurpkgs "AUR"
 		fi
+		totalpacpkgs+=(${tmppacpkgs[@]})
+		totalaurpkgs+=(${tmpaurpkgs[@]})
 	done
-}
+	echo -e "Pacman packages:"
+	echo ${totalpacpkgs[@]} | sed 's/^/\t/'
+	echo -e "\nAUR packages:"
+	echo ${totalaurpkgs[@]} | sed 's/^/\t/'
 
-# Prints a list nicely formatted:
-print-list() {
-	local listcontents
-	local listname=$1
-	local title=$2
-
-	echo "$title:"
-
-	eval "listcontents=(\${$listname[@]})"
-	for i in "${!listcontents[@]}"
-	do
-		echo -e "\t${listcontents[$i]}"
-	done
+	eval "$2=(${totalpacpkgs[@]})"
+	eval "$3=(${totalaurpkgs[@]})"
 }
 
 prompt-list() {
@@ -177,10 +188,30 @@ prompt-list() {
 	eval "$3='$choice'"
 }
 
-find-packagelists() {
-	local packagecategories=($(grep -n "packages.*:" <(/usr/bin/ls -Rw1 packages)))
-	local packagelists=($)
-	#TODO: Get the lists categorized
+# Use:
+# pick-pkg-lists packagedir outputpacman outputaur
+pick-pkg-lists() {
+	local packagedir="$1"
+	local packagelists=($(find $packagedir | sed '/\.list$/!d' | sort | sed 's/.*\(\/.*\/.*.list\)/\1/'))
 
-	print-list packagecategories "Package categories"
+	local totalpacpkgs
+	local totalaurpkgs
+
+	for i in "${!packagelists[@]}"; do
+		echo
+		local categoryname=$(echo "${packagelists[$i]}" | awk -F '/' '{print $2}' | sed 's/[0-9]-//')
+		local listname=$(echo "${packagelists[$i]}" | awk -F '/' '{print $3}' | sed 's/\.list//')
+
+		echo "Packages in $categoryname - $listname:"
+		parse-pkg-list "$packagedir/${packagelists[$i]}" pacpkgs aurpkgs
+
+		if prompt-yn "Would you like to install the $categoryname packages in list $listname?" y; then
+			totalpacpkgs+=(${pacpkgs[@]})
+			totalaurpkgs+=(${aurpkgs[@]})
+		fi
+
+	done
+
+	eval "$2=(${totalpacpkgs[@]})"
+	eval "$3=(${totalaurpkgs[@]})"
 }

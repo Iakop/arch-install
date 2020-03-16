@@ -100,15 +100,15 @@ echo "unit: sectors" >> $instructspath
 # Then, the type of boot is used to configure the first part of the sfdisk command:
 if [ "$boot" == "uefi" ]; then
 	# Creates an EFI partition:
-	echo "$installdisk1 : start=2048, size=+512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructspath
+	echo "${installdisk}1 : start=2048, size=+512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructspath
 else
 	# Gives the BIOS GUID to the first partition created:
-	echo "installdisk1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructspath
+	echo "${installdisk}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructspath
 fi
 
-echo "/dev/$installdisk2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructspath
+echo "${installdisk}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructspath
 # Finally, the rest of the disk will be allocated for data:
-echo "/dev/$installdisk3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructspath
+echo "${installdisk}3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructspath
 
 echo "Disk partitioning scheme will be the following:"
 cat $instructspath
@@ -131,24 +131,24 @@ echo
 echo "Now creating the filesystems..."
 if [ "$boot" == "uefi" ]; then
 	echo "Creating FAT32 for UEFI on $installdisk1..."
-	mkfs.fat -F32 $installdisk1
+	mkfs.fat -F32 ${installdisk}1
 else
 	echo "For BIOS boot on GPT, no filesystem is needed on $installdisk1!"
 fi
 
 echo "Creating swap on $installdisk2..."
-mkswap $installdisk2
+mkswap ${installdisk}2
 
 echo "Creating ext4 filesystem on $installdisk3..."
-mkfs.ext4 $installdisk3
+mkfs.ext4 ${installdisk}3
 
 echo "Mounting filesystems..."
-mount $installdisk3 /mnt
+mount ${installdisk}3 /mnt
 if [ "$boot" == "uefi" ]; then
 	mkdir /mnt/efi
-	mount $installdisk1 /mnt/efi
+	mount ${installdisk}1 /mnt/efi
 fi
-swapon $installdisk2
+swapon ${installdisk}2
 
 echo "Fstab will be the following:"
 genfstab -U /mnt
@@ -158,8 +158,34 @@ echo
 # Pacstrap
 ###########################################################################
 
+echo "Downloading reflector..."
+pacman -Sy --noconfirm reflector
+echo "Generating a pacman mirrorlist..."
+reflector --latest 100 --fastest 100 --protocol "https" --score 100 --save /etc/pacman.d/mirrorlist
+
+# Enable multilib:
+echo "Enabling multilib..."
+linetoedit=$(grep -n "\[multilib\]" /etc/pacman.conf | awk -F ':' '{print $1}')
+sed "${linetoedit}s/^#//" /etc/pacman.conf > /tmp/pacman.conf 
+linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
+sed "${linetoedit}s/^#//" /tmp/pacman.conf > /etc/pacman.conf 
+
+# Enable ILoveCandy and Color
+echo "Enabling Color and ILoveCandy..."
+linetoedit=$(grep -n "Color" /etc/pacman.conf | awk -F ':' '{print $1}')
+sed "${linetoedit}s/^#//" /etc/pacman.conf > /tmp/pacman.conf
+cp /tmp/pacman.conf /etc/pacman.conf
+grep "ILoveCandy" /etc/pacman.conf
+retval=$?
+if [ $retval -ne 0 ]; then
+	linetoedit=$(echo "$linetoedit" | awk -F ':' '{print $1 + 1}')
+	sed -i "${linetoedit}i\ \nILoveCandy" /etc/pacman.conf
+fi
+pacman -Sy
+
 echo "Pacstrapping base to / on ${disksavail[$choicenumber]}3 directory..."
-pacstrap /mnt ${allpackages[@]}
+pacstrap /mnt ${bootpackages[@]} ${ucodepackages[@]} ${graphicspackages[@]} ${pacpkgs[@]} 
+#${aurpkgs[@]} are used after user is made
 echo
 
 ###########################################################################
@@ -167,6 +193,27 @@ echo
 ###########################################################################
 
 genfstab -U /mnt >> /mnt/etc/fstab
+
+###########################################################################
+# Arch-chroot and install packages from list
+###########################################################################
+
+if false; then
+# Copy all the files created to the mounted drive:
+cp -r "$prefix"/* /mnt/root/
+
+# Arch-chroot into it:
+echo "Arch-chrooting into disk..."
+arch-chroot /mnt /root/$chrootstep
+fi
+
+###########################################################################
+# Clean-up 
+###########################################################################
+
+echo "Done!"
+umount -R /mnt
+swapoff ${installdisk}2
 
 fi
 
@@ -347,7 +394,7 @@ lsblk; echo
 prompt-list "Please pick a disk to install on" disksnsizes choicenumber
 if [ ! "$choicenumber" == "q" ]; then
 	echo "You picked: $choicenumber) /dev/${disksavail[$choicenumber]} with ${sizesavail[$choicenumber]} space!"
-	installdisk=/dev/${disksavail[$choicenumber]}
+	installdisk="/dev/${disksavail[$choicenumber]}"
 else
 	echo "Aborted configuration! Install cannot be completed without a disk!"
 	exit 1
@@ -514,26 +561,32 @@ echo
 ###########################################################################
 # Prompt for package collections
 ###########################################################################
-#TODO: Write prompt for user to select package collections from the packages directory
+# Prompt for user to select package collections from the packages directory:
+echo "Parsing package lists... Please select the packages you want in this installation!"
+pick-pkg-lists $packagespath pacpkgs aurpkgs
 
+# Print the packages to config:
+echo "pacpkgs=(\\" >> $configinfopath
+for i in "${!pacpkgs[@]}"; do
+	echo -e "\t${pacpkgs[$i]}\\" >> $configinfopath
+done
+echo -e "\t)" >> $configinfopath
 
-if false; then
+echo "aurpkgs=(\\" >> $configinfopath
+for i in "${!aurpkgs[@]}"; do
+	echo -e "\t${aurpkgs[$i]}\\" >> $configinfopath
+done
+echo -e "\t)" >> $configinfopath
+echo
+
 ###########################################################################
-# Arch-chroot and install packages from list
+# Done!
 ###########################################################################
-
-# Copy all the files created to the mounted drive:
-cp -r "$prefix"/* /mnt/root/
-
-# Arch-chroot into it:
-echo "Arch-chrooting into disk..."
-arch-chroot /mnt /root/$chrootstep
 echo "Done!"
-
-###########################################################################
-# Clean-up 
-###########################################################################
-umount -R /mnt
-swapoff /dev/${disksavail[$choicenumber]}2
+echo "$configinfo written to $configinfopath!"
+if prompt-yn "Would you like to copy to the working directory as config to use?" y; then
+	cp "$configinfopath" "$(pwd)/config"
 fi
+
+
 fi

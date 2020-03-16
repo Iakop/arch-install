@@ -48,12 +48,7 @@ diskinfo="disk.info"
 diskinfopath="$prefix/info/$diskinfo"
 
 # Package lists:
-packageslist="packages.list"
-packageslistpath="$prefix/packages/$packageslist"
-ucodelist="ucode.list"
-ucodelistpath="$prefix/packages/$ucodelist"
-graphicsinstall="graphics.list"
-graphicsinstallpath="$prefix/packages/$graphicsinstall"
+packagespath="$prefix/packages/"
 
 # Keys for keychain:
 aurkeys="aur.keys"
