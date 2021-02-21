@@ -60,7 +60,7 @@ if [ $proceed == "yes" ]; then
 	fi
 
 	echo "Checking if Eicar-Test-Signature can be found..."
-	curl https://www.eicar.org/download/eicar.com.txt | clamscan - | grep "stdin: Eicar-Test-Signature FOUND" >/dev/null 2>&1
+	curl https://www.eicar.org/download/eicar.com.txt | clamscan - | grep "stdin:.*FOUND" >/dev/null 2>&1
 	retval=$?
 	if [ $retval -ne 0 ]; then
 		echo "Eicar-Test-Signature not found ($retval). Exiting"
