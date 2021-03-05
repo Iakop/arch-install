@@ -82,34 +82,10 @@ echo
 # Scale and partition installation drive:
 ###########################################################################
 
-echo "Setting up disk partitioning scheme..."
-# First the disk is added to the sfdisk command:
+
+
 instructs="instructs.sfdisk"
 instructspath="/tmp/$instructs"
-# The label is gpt in this installation, as it supports both EFI and legacy BIOS:
-echo "label: gpt" > $instructspath
-# The device picked earlier is echoed into the instructions:
-echo "device: $installdisk" >> $instructspath
-# The units are sectors, and the sector size is found:
-echo "unit: sectors" >> $instructspath
-
-# Sectorsize, if that becomes important:
-#sectorsize=$(cat /sys/block/$installdisk/queue/hw_sector_size)
-
-# The start of the first partition is for the efivars, or boot sector, so it's dependant on boot type:
-# Then, the type of boot is used to configure the first part of the sfdisk command:
-if [ "$boot" == "uefi" ]; then
-	# Creates an EFI partition:
-	echo "${installdisk}1 : start=2048, size=+512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B" >> $instructspath
-else
-	# Gives the BIOS GUID to the first partition created:
-	echo "${installdisk}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649" >> $instructspath
-fi
-
-echo "${installdisk}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F" >> $instructspath
-# Finally, the rest of the disk will be allocated for data:
-echo "${installdisk}3 : type=0FC63DAF-8483-4772-8E79-3D69D8477DE4" >> $instructspath
-
 echo "Disk partitioning scheme will be the following:"
 cat $instructspath
 
@@ -157,11 +133,11 @@ echo
 ###########################################################################
 # Pacstrap
 ###########################################################################
-
-echo "Downloading reflector..."
-pacman -Sy --noconfirm reflector
+# Reflector is included in the bootdisk
+#echo "Downloading reflector..."
+#pacman -Sy --noconfirm reflector
 echo "Generating a pacman mirrorlist..."
-reflector --latest 100 --fastest 100 --protocol "https" --score 100 --save /etc/pacman.d/mirrorlist
+reflector --latest 50 --fastest 50 --protocol "https" --score 50 --save /etc/pacman.d/mirrorlist
 
 # Enable multilib:
 echo "Enabling multilib..."
@@ -399,9 +375,53 @@ else
 	echo "Aborted configuration! Install cannot be completed without a disk!"
 	exit 1
 fi
-
 # Write the disk choice to config:
 echo "installdisk=$installdisk" >> $configinfopath
+
+declare -a partitioning
+if prompt-yn "Would you like to configure the disks manually (alternative is a default partitioning)?\nThe partition table needs to be either written or exported as 'part.sfdisk'." y; then
+	fdisk $installdisk
+	if [ ! -d "$prefix/part.sfdisk" ]; then
+		echo "No exported 'part.sfdisk' file found, exporting partitioning table instead!"
+		sfdisk -d $installdisk > "$prefix/part.sfdisk"
+	fi
+	# Map the partitioning file to an array to be put into the config file:
+	mapfile -t partitioning < "$prefix/part.sfdisk"
+else
+	echo "Partitioning will be by the default scheme!"
+	echo "Setting up disk partitioning scheme..."
+	# The label is gpt in this installation, as it supports both EFI and legacy BIOS:
+	partitioning+="label: gpt"
+	# The device picked earlier is echoed into the instructions:
+	partitioning+="device: $installdisk"
+	# The units are sectors, and the sector size is found:
+	partitioning+="unit: sectors"
+
+	# Sectorsize, if that becomes important:
+	#sectorsize=$(cat /sys/block/$installdisk/queue/hw_sector_size)
+
+	# The start of the first partition is for the efivars, or boot sector, so it's dependant on boot type:
+	# Then, the type of boot is used to configure the first part of the sfdisk command:
+	if [ "$boot" == "uefi" ]; then
+		echo "Using efi boot partition"
+		# Creates an EFI partition:
+		partitioning+="${installdisk}1 : start=2048, size=+512MiB, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+	else
+		echo ""
+		# Gives the BIOS GUID to the first partition created:
+		partitioning+="${installdisk}1 : start=2048, size=+1MiB, type=21686148-6449-6E6F-744E-656564454649"
+	fi
+	partitioning+="${installdisk}2 : size=+${swapsize}GB, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F"
+	# Finally, the rest of the disk will be allocated for data:
+	partitioning+="${installdisk}3 : type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709"
+fi
+# Write the partitioning table to config:
+echo "partitioning=(\\" >> $configinfopath
+for i in "${!partitioning[@]}"; do
+	echo -e "\t${partitioning[$i]}\\" >> $configinfopath
+done
+echo -e "\t)" >> $configinfopath
+
 echo
 
 ###########################################################################
