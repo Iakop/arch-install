@@ -78,14 +78,13 @@ ghostscript
 ## Wine ########################
 wine
 wine-mono
-wine_gecko
+wine-gecko
 lib32-libpulse
 lib32-alsa-plugins
 lib32-openal
 lib32-mpg123
 
 ## VirtualBox-Guest ############
-virtualbox-guest-modules-arch
 virtualbox-guest-utils
 
 ## END #########################
